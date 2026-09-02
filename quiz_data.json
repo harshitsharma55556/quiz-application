@@ -1,0 +1,42 @@
+[
+    {
+        "q": "What is the output of print(2 ** 3) in Python?",
+        "options": [
+            "6",
+            "8",
+            "9",
+            "12"
+        ],
+        "ans": "8"
+    },
+    {
+        "q": "Which SQL command is used to extract data from a database?",
+        "options": [
+            "EXTRACT",
+            "SELECT",
+            "GET",
+            "OPEN"
+        ],
+        "ans": "SELECT"
+    },
+    {
+        "q": "What does 'VLOOKUP' stand for in Excel?",
+        "options": [
+            "Vertical Lookup",
+            "Value Lookup",
+            "Variable Lookup",
+            "View Lookup"
+        ],
+        "ans": "Vertical Lookup"
+    },
+    {
+        "q": "What is the capital of india.",
+        "options": [
+            "Delhi",
+            "Chandigarh",
+            "Mumbai",
+            "Assam"
+        ],
+        "ans": "Delhi"
+    }
+]
