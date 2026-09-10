@@ -267,30 +267,29 @@ def render_student_quiz():
 
     # Final result
     else:
+     st.success("Quiz Completed!")
+     st.write(f"Student: **{st.session_state.student_name}**")
 
-        st.success("Quiz Completed!")
+     total = len(questions)
+    score = st.session_state.score
+    percentage = (score / total) * 100
 
-        st.write(
-            f"Student: **{st.session_state.student_name}**"
-        )
+    st.metric(
+        label="Final Score",
+        value=f"{score} / {total}",
+        delta=f"{percentage:.1f}%"
+    )
 
-        total = len(questions)
+    st.write(f"Correct Answers: {score}")
+    st.write(f"Incorrect Answers: {st.session_state.incorrect}")
 
-        score = st.session_state.score
+    if st.button("Retake Quiz"):
+        reset_quiz()
+        st.rerun()
 
-        percentage = (score / total) * 100
+        reset_quiz()
 
-        st.metric(
-            label="Final Score",
-            value=f"{score} / {total}",
-            delta=f"{percentage:.1f}%"
-        )
-
-        if st.button("Retake Quiz"):
-
-            reset_quiz()
-
-            st.rerun()
+        st.rerun()
 
 
 # --- Main Application Controller ---

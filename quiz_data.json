@@ -28,15 +28,5 @@
             "View Lookup"
         ],
         "ans": "Vertical Lookup"
-    },
-    {
-        "q": "What is the capital of india.",
-        "options": [
-            "Delhi",
-            "Chandigarh",
-            "Mumbai",
-            "Assam"
-        ],
-        "ans": "Delhi"
     }
 ]
