@@ -5,15 +5,14 @@ A Streamlit classroom quiz app with separate student and teacher accounts. Stude
 ## Run on Windows
 
 1. Install Python 3.10 or newer and select **Add Python to PATH** during setup.
-2. Open this folder in File Explorer, click the address bar, type `cmd`, and press Enter.
-3. Run:
+2. Double-click **`run.bat`** in this project folder. It opens the project’s fixed address, `http://localhost:8504`, and starts this folder’s `app.py` if needed.
+
+To start it manually, open a terminal in this folder and run:
 
    ```text
    py -m pip install -r requirements.txt
-   py -m streamlit run app.py
+   py -m streamlit run app.py --server.port 8504
    ```
-
-You can also double-click `run.bat` after installing Python and the dependencies.
 
 ## First-time setup
 
