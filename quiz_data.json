@@ -1,32 +1,29 @@
 [
-    {
-        "q": "What is the output of print(2 ** 3) in Python?",
-        "options": [
-            "6",
-            "8",
-            "9",
-            "12"
-        ],
-        "ans": "8"
-    },
-    {
-        "q": "Which SQL command is used to extract data from a database?",
-        "options": [
-            "EXTRACT",
-            "SELECT",
-            "GET",
-            "OPEN"
-        ],
-        "ans": "SELECT"
-    },
-    {
-        "q": "What does 'VLOOKUP' stand for in Excel?",
-        "options": [
-            "Vertical Lookup",
-            "Value Lookup",
-            "Variable Lookup",
-            "View Lookup"
-        ],
-        "ans": "Vertical Lookup"
-    }
+  {
+    "q": "What is the output of print(2 ** 3) in Python?",
+    "options": ["6", "8", "9", "12"],
+    "ans": "8",
+    "category": "Python",
+    "difficulty": "Easy",
+    "points": 1,
+    "explanation": "The ** operator raises a number to a power: 2 × 2 × 2 = 8."
+  },
+  {
+    "q": "Which SQL command is used to extract data from a database?",
+    "options": ["EXTRACT", "SELECT", "GET", "OPEN"],
+    "ans": "SELECT",
+    "category": "Databases",
+    "difficulty": "Easy",
+    "points": 1,
+    "explanation": "SELECT reads rows from one or more database tables."
+  },
+  {
+    "q": "What does 'VLOOKUP' stand for in Excel?",
+    "options": ["Vertical Lookup", "Value Lookup", "Variable Lookup", "View Lookup"],
+    "ans": "Vertical Lookup",
+    "category": "Excel",
+    "difficulty": "Easy",
+    "points": 1,
+    "explanation": "VLOOKUP searches vertically in the first column of a range."
+  }
 ]
