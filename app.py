@@ -225,8 +225,9 @@ def load_quizzes():
 
 
 def init_state():
-    if "quizzes" not in st.session_state:
-        st.session_state.quizzes = load_quizzes()
+    # Refresh the quiz bank from disk on each app rerun so newly published quizzes appear
+    # in active student sessions without requiring a new browser session.
+    st.session_state.quizzes = load_quizzes()
     if "accounts" not in st.session_state:
         data = load_json(ACCOUNTS_FILE, [])
         st.session_state.accounts = data if isinstance(data, list) else []
@@ -710,6 +711,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
