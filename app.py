@@ -26,7 +26,7 @@ DEFAULT_QUESTIONS = [
     {"q": "What does 'VLOOKUP' stand for in Excel?", "options": ["Vertical Lookup", "Value Lookup", "Variable Lookup", "View Lookup"], "ans": "Vertical Lookup", "category": "Excel", "difficulty": "Easy", "explanation": "VLOOKUP searches vertically in the first column of a range."},
 ]
 
-st.set_page_config(page_title="Quizly | Classroom", page_icon="✦", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Quizly | Classroom", page_icon=str(BASE_DIR / "quizly.svg"), layout="wide", initial_sidebar_state="collapsed")
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Montserrat:wght@500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap');
@@ -112,6 +112,22 @@ p,label,[data-testid="stWidgetLabel"] p { font-family:'Source Sans 3','Segoe UI'
 @media(max-width:850px) { .brand-tag,.brand-actions span:first-child { display:none; }.public-nav { overflow-x:auto; white-space:nowrap; }.landing-inner { align-items:flex-start; }.landing-title { font-size:3.5rem !important; }.landing-art { width:230px; flex-basis:230px; transform:scale(.85); transform-origin:center right; } }
 @media(max-width:620px) { .brandbar { height:68px; }.brand-actions { gap:.7rem; font-size:.72rem; }.public-nav { height:48px; font-size:.68rem; }.landing-hero { padding:2.5rem 1.3rem; }.landing-inner { display:block; }.landing-title { font-size:3rem !important; }.landing-art { display:none; }.hero { padding:2rem 1.3rem; }.hero h1 { font-size:2.5rem !important; } }
 [data-testid="stSidebar"],[data-testid="stSidebarCollapsedControl"] { display:none !important; }
+/* Clean, high-contrast portal cards and login form */
+.section-kicker { margin-top:1.5rem; color:#0a9dbb; font:800 .78rem 'Montserrat',sans-serif; letter-spacing:.16em; }
+.portal-title { margin:.3rem 0 .25rem; color:#07113f !important; font:800 2rem 'Montserrat',sans-serif !important; }
+.role-heading { display:flex; align-items:center; gap:.85rem; color:#09143c; font:800 1.3rem 'Montserrat',sans-serif; margin:.2rem 0 .7rem; }
+.role-icon { width:42px; height:42px; display:inline-grid; place-items:center; border-radius:13px; background:linear-gradient(145deg,#e1faff,#f1f0ff); border:1px solid #b9eaf2; color:#087ca7; font:800 1rem 'Montserrat',sans-serif; }
+[data-testid="stVerticalBlockBorderWrapper"] { padding:1rem !important; border:1px solid #dbe5f0 !important; border-radius:20px !important; background:linear-gradient(145deg,#fff,#f8fbff) !important; box-shadow:0 14px 32px #07113f12 !important; }
+[data-testid="stForm"] { max-width:760px; margin:1rem auto !important; padding:1.5rem !important; border:1px solid #dbe5f0 !important; border-radius:18px !important; background:#fff !important; box-shadow:0 14px 34px #07113f10 !important; }
+[data-testid="stTextInput"] input,[data-testid="stTextArea"] textarea,[data-baseweb="input"] input,[data-baseweb="textarea"] textarea { background:#fff !important; color:#111b3e !important; font-size:1.08rem !important; border-radius:12px !important; }
+[data-testid="stTextInput"] input:focus,[data-testid="stTextArea"] textarea:focus { border-color:#12b8d3 !important; box-shadow:0 0 0 3px #12b8d322 !important; }
+[data-testid="stWidgetLabel"],[data-testid="stWidgetLabel"] p,label,legend { color:#172348 !important; }
+[data-testid="stCaptionContainer"] p { color:#626d88 !important; }
+div.stButton > button { background:#fff !important; color:#0b1942 !important; border:1px solid #cbd7e7 !important; border-radius:12px !important; font:700 1rem 'Montserrat',sans-serif !important; min-height:3.2rem !important; }
+div.stButton > button:hover { background:#effbff !important; border-color:#12b8d3 !important; color:#065f83 !important; }
+div.stButton > button[kind*="primary"],div[data-testid="stFormSubmitButton"] button[kind*="primary"],button[kind*="primary"] { background:linear-gradient(105deg,#08afd0,#087dc0) !important; color:#fff !important; border:0 !important; }
+button[kind*="primary"] *,div[data-testid="stFormSubmitButton"] button * { color:#fff !important; }
+input[type="radio"] { accent-color:#0aaec8 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -232,21 +248,21 @@ def render_auth():
     published = sum(bool(q.get("published")) for q in st.session_state.quizzes)
     st.markdown('''<header class="brandbar"><div class="brand-lockup"><div class="brand-logo">Q</div><div class="brand-name">QUIZLY</div><div class="brand-tag">LEARN +<br>GROW</div></div></header>''', unsafe_allow_html=True)
     st.markdown('''<nav class="public-nav"><span>STUDENT QUIZZES</span><span>LEARNING PROGRESS</span><span>TEACHER STUDIO</span><span>BUILD · PRACTICE · GROW</span></nav>''', unsafe_allow_html=True)
-    st.markdown(f'''<section class="landing-hero"><div class="landing-inner"><div class="landing-copy"><div class="landing-kicker">A CLASSROOM FOR CURIOSITY</div><h1 class="landing-title">Learn. <em>Grow.</em><br>Show what you know.</h1><p class="landing-subtitle">Take thoughtful quizzes from your teacher, build confidence with every answer, and keep your progress in view.</p><div class="landing-stats"><strong>{published}</strong> PUBLISHED QUIZZES &nbsp;·&nbsp; <strong>2</strong> SPACES TO LEARN</div></div><div class="landing-art"><div class="art-glow"></div><div class="art-card"><small>YOUR NEXT CHALLENGE</small><div class="art-score">Ready?</div><div class="art-progress"><span></span></div><small>ONE QUESTION AT A TIME</small></div><div class="art-chip">✦ &nbsp; Keep growing</div></div></div></section>''', unsafe_allow_html=True)
-    st.markdown("### Start here")
-    st.caption("Choose your space to sign in or create an account.")
+    st.markdown(f'''<section class="landing-hero"><div class="landing-inner"><div class="landing-copy"><div class="landing-kicker">A CLASSROOM FOR CURIOSITY</div><h1 class="landing-title">Learn. <em>Grow.</em><br>Show what you know.</h1><p class="landing-subtitle">Take thoughtful quizzes from your teacher, build confidence with every answer, and keep your progress in view.</p><div class="landing-stats"><strong>{published}</strong> PUBLISHED QUIZZES &nbsp;·&nbsp; <strong>2</strong> SPACES TO LEARN</div></div><div class="landing-art"><div class="art-glow"></div><div class="art-card"><small>YOUR NEXT CHALLENGE</small><div class="art-score">Ready?</div><div class="art-progress"><span></span></div><small>ONE QUESTION AT A TIME</small></div><div class="art-chip">KEEP GROWING</div></div></div></section>''', unsafe_allow_html=True)
+    st.markdown('<div class="section-kicker">SIGN IN TO QUIZLY</div><h2 class="portal-title">Choose your portal</h2>', unsafe_allow_html=True)
+    st.caption("Select a role to continue to your account.")
     role = st.session_state.get("auth_role", "student")
     student_col, teacher_col = st.columns(2, gap="medium")
     with student_col:
         with st.container(border=True):
-            st.markdown("### 🎓  Student Login")
+            st.markdown('<div class="role-heading"><span class="role-icon">S</span><span>Student Login</span></div>', unsafe_allow_html=True)
             st.caption("Take published quizzes and follow your scores.")
             if st.button("Student Login", key="select_student", type="primary" if role == "student" else "secondary", use_container_width=True):
                 st.session_state.auth_role = "student"
                 st.rerun()
     with teacher_col:
         with st.container(border=True):
-            st.markdown("### 🧑‍🏫  Admin Login")
+            st.markdown('<div class="role-heading"><span class="role-icon">A</span><span>Admin Login</span></div>', unsafe_allow_html=True)
             st.caption("Create quizzes, publish them, and review class results.")
             if st.button("Admin Login", key="select_teacher", type="primary" if role == "admin" else "secondary", use_container_width=True):
                 st.session_state.auth_role = "admin"
@@ -458,7 +474,7 @@ def render_results():
     st.progress(pct / 100, text=f"Your score: {pct}%")
     with st.expander("Review your answers", expanded=True):
         for i, item in enumerate(result["details"], 1):
-            st.markdown(f"**{'✅' if item['is_correct'] else '❌'} {i}. {item['q']}**")
+            st.markdown(f"**{'CORRECT' if item['is_correct'] else 'REVIEW'} · {i}. {item['q']}**")
             st.caption(f"Your answer: {item['answer'] or 'Not answered'} · Correct answer: {item['correct_answer']}")
             if item["explanation"]:
                 st.info(item["explanation"])
@@ -610,6 +626,9 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
 
 
 
