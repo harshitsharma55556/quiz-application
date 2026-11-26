@@ -165,6 +165,23 @@ input[type="radio"] { accent-color:#0aaec8 !important; }
 [data-testid="stRadio"] [role="radiogroup"] label { padding:.55rem .75rem; margin:.35rem 0; border:1px solid #eee2f7; border-radius:13px; background:#fff; font-weight:600; }
 [data-testid="stRadio"] [role="radiogroup"] label:has(input:checked) { border-color:#a65bd4; background:#f7edff; box-shadow:0 0 0 2px #a65bd422; }
 @media(max-width:700px) { .quiz-question-text { font-size:1.35rem; }.quiz-question-panel,.quiz-side-card { padding:1rem; }.score-ring { width:140px;height:140px; }.score-ring-inner { width:112px;height:112px; } }
+/* Student workspace: polished quiz discovery, progress, and motion */
+.student-intro { display:flex; align-items:flex-end; justify-content:space-between; gap:2rem; padding:2.1rem 2.4rem; margin:1.35rem 0 1.2rem; border:1px solid #e5e7f4; border-radius:26px; background:radial-gradient(ellipse at 88% 5%,#d8ccff 0,transparent 35%),linear-gradient(120deg,#fff,#f3f0ff 70%,#edfaff); box-shadow:0 18px 48px #10174712; }
+.student-intro-copy { max-width:760px; }.student-intro-kicker { color:#7455c7; font:800 .75rem 'Montserrat',sans-serif; letter-spacing:.16em; text-transform:uppercase; }.student-intro h1 { margin:.55rem 0 .45rem; font:800 clamp(2rem,4vw,3.1rem)/1.08 'Montserrat',sans-serif !important; letter-spacing:-.055em !important; }.student-intro p { color:#62708d; font-size:1.08rem !important; margin:0; }
+.student-focus { min-width:180px; padding:1rem 1.2rem; border:1px solid #ffffffb8; border-radius:18px; background:#ffffffa8; backdrop-filter:blur(12px); }.student-focus strong { display:block; color:#261c5c; font:800 1.65rem 'Montserrat',sans-serif; }.student-focus span { color:#70738a; font-size:.9rem; }
+.student-section-title { margin:.2rem 0 .25rem; font:800 1.55rem 'Montserrat',sans-serif; color:#111b44; letter-spacing:-.04em; }.student-section-copy { color:#74809a; margin:0 0 1rem; }
+.student-toolbar { padding:1rem 1.1rem .4rem; margin:.8rem 0 1.1rem; border:1px solid #e5eaf3; border-radius:20px; background:#ffffffd9; box-shadow:0 12px 30px #17224a0a; }
+.student-quiz-card { position:relative; overflow:hidden; min-height:210px; padding:1.35rem 1.4rem 1.2rem; margin:.15rem 0 .2rem; border:1px solid #e3e8f3; border-radius:22px; background:linear-gradient(145deg,#fff,#fbfcff); box-shadow:0 12px 30px #12234c0b; transition:transform .24s ease,box-shadow .24s ease,border-color .24s ease; }
+.student-quiz-card:before { content:''; position:absolute; width:110px; height:110px; border-radius:50%; top:-65px; right:-23px; background:linear-gradient(135deg,#e6dcff,#d8f7f7); opacity:.8; }
+.student-quiz-card:hover { transform:translateY(-4px); border-color:#b8a9ee; box-shadow:0 20px 38px #30236217; }
+.student-quiz-top { position:relative; display:flex; justify-content:space-between; align-items:center; gap:.8rem; }.student-topic { color:#6a51bd; font:800 .7rem 'Montserrat',sans-serif; letter-spacing:.13em; text-transform:uppercase; }.student-status { padding:.3rem .65rem; border:1px solid #d9f0e8; border-radius:999px; background:#effaf5; color:#287a61; font:700 .68rem 'Montserrat',sans-serif; }
+.student-quiz-card h3 { position:relative; margin:.8rem 0 .4rem; font:800 1.3rem 'Montserrat',sans-serif !important; letter-spacing:-.035em !important; }.student-quiz-card p { position:relative; min-height:2.9rem; margin:0 0 .85rem; color:#69758d; font-size:.96rem !important; line-height:1.5; }.student-card-meta { position:relative; display:flex; flex-wrap:wrap; gap:.45rem; }.student-card-meta span { padding:.32rem .65rem; border:1px solid #e6e9f1; border-radius:999px; background:#f7f8fc; color:#4c5875; font:700 .7rem 'Montserrat',sans-serif; }
+.student-card-progress { position:relative; display:flex; justify-content:space-between; gap:.6rem; margin-top:.85rem; color:#78839a; font-size:.78rem; }.student-card-progress strong { color:#6449bd; }
+.student-start div.stButton > button { border-radius:0 0 17px 17px !important; margin-top:-.25rem; min-height:3.25rem !important; transition:filter .2s ease,letter-spacing .2s ease,transform .2s ease; }.student-start div.stButton > button:hover { filter:brightness(1.05); letter-spacing:.025em; transform:translateY(-1px); }
+.student-empty { padding:2rem; border:1px dashed #cbd3e3; border-radius:20px; background:#ffffffb5; color:#69758d; text-align:center; }
+.student-intro ~ div div.stButton > button { transition:transform .2s ease,box-shadow .2s ease,background .2s ease; }
+.student-intro ~ div div.stButton > button:hover { transform:translateY(-2px); box-shadow:0 7px 18px #3225641b; }
+@media(max-width:760px) { .student-intro { display:block; padding:1.5rem; }.student-focus { margin-top:1.2rem; }.student-quiz-card { min-height:0; } }
 </style>
 """, unsafe_allow_html=True)
 
@@ -434,23 +451,104 @@ def finish_attempt(auto=False):
 def render_student_home():
     user = st.session_state.user
     quizzes = [q for q in st.session_state.quizzes if q.get("published") and q.get("questions")]
-    hero("STUDENT SPACE", f"Welcome, {user['username']}.", "Choose a quiz your teacher has made available.")
+    mine = [r for r in st.session_state.results if r.get("username_key") == user["username_key"]]
+    completed_ids = {r.get("quiz_id") for r in mine}
+    best_by_quiz = {}
+    for result in mine:
+        key = result.get("quiz_id")
+        best_by_quiz[key] = max(best_by_quiz.get(key, 0), int(result.get("percentage", 0)))
+    average = round(sum(int(r.get("percentage", 0)) for r in mine) / len(mine)) if mine else 0
+    st.markdown(
+        f"<section class='student-intro'><div class='student-intro-copy'><div class='student-intro-kicker'>YOUR LEARNING SPACE</div>"
+        f"<h1>Good to see you, {html.escape(user['username'])}.</h1><p>Pick up a new challenge, build your streak, and keep your progress moving.</p></div>"
+        f"<div class='student-focus'><strong>{len(quizzes)} ready</strong><span>Published quizzes to explore</span></div></section>",
+        unsafe_allow_html=True,
+    )
+    st.markdown("<div class='student-section-title'>Your learning at a glance</div>", unsafe_allow_html=True)
+    stats = st.columns(4, gap="medium")
+    stats[0].metric("Available quizzes", len(quizzes))
+    stats[1].metric("Quizzes tried", len(completed_ids))
+    stats[2].metric("Attempts", len(mine))
+    stats[3].metric("Average score", f"{average}%" if mine else "—")
     if not quizzes:
-        st.info("There aren’t any published quizzes yet. Check back after your teacher publishes one.")
+        st.markdown("<div class='student-empty'><strong>No quizzes published yet</strong><br>When your teacher makes one available, it will appear here.</div>", unsafe_allow_html=True)
         return
-    st.markdown("### Available quizzes")
-    columns = st.columns(2, gap="medium")
-    for i, quiz in enumerate(quizzes):
+    st.markdown("<div class='student-section-title'>Explore quizzes</div><p class='student-section-copy'>Find a topic, choose your pace, and jump back in whenever you’re ready.</p>", unsafe_allow_html=True)
+    with st.container(border=True):
+        search_col, topic_col, sort_col = st.columns([1.55, 1, 1], gap="medium")
+        search = search_col.text_input("Search quizzes", placeholder="Search by title or topic", key="student_quiz_search", label_visibility="collapsed")
+        topics = sorted({str(question.get("category", "General")) for quiz in quizzes for question in quiz.get("questions", [])})
+        selected_topic = topic_col.selectbox("Topic", ["All topics", *topics], key="student_quiz_topic", label_visibility="collapsed")
+        sort_by = sort_col.selectbox("Sort", ["Recommended", "Title A–Z", "Shortest first", "Most questions"], key="student_quiz_sort", label_visibility="collapsed")
+    filter_options = ["All quizzes", "Not started", "Completed"]
+    st.session_state.setdefault("student_quiz_filter", "All quizzes")
+    filter_cols = st.columns([1, 1, 1, 4])
+    with filter_cols[0]:
+        if st.button("All quizzes", key="filter_all", type="primary" if st.session_state.student_quiz_filter == "All quizzes" else "secondary", use_container_width=True):
+            st.session_state.student_quiz_filter = "All quizzes"
+            st.rerun()
+    with filter_cols[1]:
+        if st.button("Not started", key="filter_new", type="primary" if st.session_state.student_quiz_filter == "Not started" else "secondary", use_container_width=True):
+            st.session_state.student_quiz_filter = "Not started"
+            st.rerun()
+    with filter_cols[2]:
+        if st.button("Completed", key="filter_done", type="primary" if st.session_state.student_quiz_filter == "Completed" else "secondary", use_container_width=True):
+            st.session_state.student_quiz_filter = "Completed"
+            st.rerun()
+    view_filter = st.session_state.student_quiz_filter if st.session_state.student_quiz_filter in filter_options else "All quizzes"
+    query = search.strip().casefold()
+    visible = []
+    for quiz in quizzes:
+        title = str(quiz.get("title", "Untitled quiz"))
+        description = str(quiz.get("description", ""))
+        quiz_topics = {str(question.get("category", "General")) for question in quiz.get("questions", [])}
+        if query and query not in f"{title} {description} {' '.join(quiz_topics)}".casefold():
+            continue
+        if selected_topic != "All topics" and selected_topic not in quiz_topics:
+            continue
+        if view_filter == "Completed" and quiz["id"] not in completed_ids:
+            continue
+        if view_filter == "Not started" and quiz["id"] in completed_ids:
+            continue
+        visible.append(quiz)
+    if sort_by == "Title A–Z":
+        visible.sort(key=lambda quiz: str(quiz.get("title", "")).casefold())
+    elif sort_by == "Shortest first":
+        visible.sort(key=lambda quiz: (int(quiz.get("duration_minutes", 0) or 0) or 999, len(quiz.get("questions", []))))
+    elif sort_by == "Most questions":
+        visible.sort(key=lambda quiz: len(quiz.get("questions", [])), reverse=True)
+    st.caption(f"Showing {len(visible)} of {len(quizzes)} published quizzes")
+    if not visible:
+        st.markdown("<div class='student-empty'><strong>No matching quizzes</strong><br>Try another search or choose a different topic or status.</div>", unsafe_allow_html=True)
+    columns = st.columns(2, gap="large")
+    for i, quiz in enumerate(visible):
         with columns[i % 2]:
-            st.markdown(f"<div class='quiz-card'><div class='eyebrow'>READY TO PLAY</div><h3>{html.escape(quiz['title'])}</h3><p style='color:#70738a'>{html.escape(quiz.get('description',''))}</p><span class='pill'>{len(quiz['questions'])} questions</span><span class='pill'>{int(quiz.get('duration_minutes',0))} min</span></div>", unsafe_allow_html=True)
-            if st.button(f"Start {quiz['title']}", key=f"start_{quiz['id']}", type="primary", use_container_width=True):
+            title = str(quiz.get("title", "Untitled quiz"))
+            questions = quiz.get("questions", [])
+            quiz_topics = sorted({str(question.get("category", "General")) for question in questions})
+            topic_label = quiz_topics[0] if quiz_topics else "General"
+            duration = int(quiz.get("duration_minutes", 0) or 0)
+            complete = quiz["id"] in completed_ids
+            status = "COMPLETED" if complete else "READY TO PLAY"
+            score = best_by_quiz.get(quiz["id"])
+            best_line = f"Best score <strong>{score}%</strong>" if score is not None else "A fresh start is waiting"
+            st.markdown(
+                f"<article class='student-quiz-card'><div class='student-quiz-top'><span class='student-topic'>{html.escape(topic_label)}</span><span class='student-status'>{status}</span></div>"
+                f"<h3>{html.escape(title)}</h3><p>{html.escape(str(quiz.get('description') or 'A quiz prepared by your teacher.'))}</p>"
+                f"<div class='student-card-meta'><span>{len(questions)} questions</span><span>{f'{duration} min' if duration else 'No time limit'}</span><span>{len(quiz_topics)} topic{'s' if len(quiz_topics) != 1 else ''}</span></div>"
+                f"<div class='student-card-progress'><span>{best_line}</span><span>{'Ready to improve' if complete else 'Start when you’re ready'}</span></div></article>",
+                unsafe_allow_html=True,
+            )
+            button_label = "Try again  →" if complete else "Start quiz  →"
+            if st.button(button_label, key=f"start_{quiz['id']}", type="primary", use_container_width=True):
                 start_attempt(quiz)
                 st.rerun()
-    mine = [r for r in st.session_state.results if r.get("username_key") == user["username_key"]]
     if mine:
-        st.markdown("### Your recent scores")
-        for result in mine[:3]:
-            st.caption(f"{result.get('quiz_title','Quiz')} · {result.get('percentage',0)}% · {result.get('date','')}")
+        st.markdown("<div class='student-section-title' style='margin-top:2rem'>Recent progress</div>", unsafe_allow_html=True)
+        recent_cols = st.columns(min(3, len(mine)), gap="medium")
+        for col, result in zip(recent_cols, mine[:3]):
+            with col:
+                st.markdown(f"<div class='quiz-side-card'><div class='student-topic'>RECENT RESULT</div><div class='quiz-side-title' style='margin:.45rem 0'>{html.escape(str(result.get('quiz_title', 'Quiz')))}</div><strong style='font:800 1.6rem Montserrat;color:#7043b5'>{int(result.get('percentage',0))}%</strong><div class='small-muted'>{html.escape(str(result.get('date','')))}</div></div>", unsafe_allow_html=True)
 
 
 def leaderboard_entries(quiz_id, current_user=None, current_score=0, current_total=0):
