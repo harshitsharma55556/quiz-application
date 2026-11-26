@@ -26,6 +26,18 @@ DEFAULT_QUESTIONS = [
     {"q": "What does 'VLOOKUP' stand for in Excel?", "options": ["Vertical Lookup", "Value Lookup", "Variable Lookup", "View Lookup"], "ans": "Vertical Lookup", "category": "Excel", "difficulty": "Easy", "explanation": "VLOOKUP searches vertically in the first column of a range."},
 ]
 
+PYTHON_QUESTIONS = [
+    {"q": "What is printed by print(2 + 3 * 2)?", "options": ["10", "8", "13", "7"], "ans": "8", "category": "Python", "difficulty": "Easy", "explanation": "Multiplication happens before addition, so 2 + (3 × 2) equals 8."},
+    {"q": "What does colors[1] return when colors = ['red', 'blue', 'green']?", "options": ["red", "blue", "green", "An error"], "ans": "blue", "category": "Python", "difficulty": "Easy", "explanation": "Python lists use zero-based indexing, so index 1 is the second item."},
+    {"q": "What is the value of len('quiz')?", "options": ["3", "4", "5", "It depends"], "ans": "4", "category": "Python", "difficulty": "Easy", "explanation": "len returns the number of characters in the string. 'quiz' has four characters."},
+    {"q": "What is the result of 5 > 3 and 2 < 1?", "options": ["True", "False", "2", "An error"], "ans": "False", "category": "Python", "difficulty": "Medium", "explanation": "The first comparison is true, but the second is false. With and, both conditions must be true."},
+    {"q": "What does list(range(3)) produce?", "options": ["[1, 2, 3]", "[0, 1, 2]", "[0, 1, 2, 3]", "[3]"], "ans": "[0, 1, 2]", "category": "Python", "difficulty": "Easy", "explanation": "range(3) starts at zero and stops before three."},
+    {"q": "Which expression reads the value for the key 'name' from a dictionary called student?", "options": ["student.name", "student('name')", "student['name']", "student->name"], "ans": "student['name']", "category": "Python", "difficulty": "Medium", "explanation": "Square brackets with the key retrieve a value from a dictionary."},
+    {"q": "Which keyword starts a function definition in Python?", "options": ["function", "func", "def", "define"], "ans": "def", "category": "Python", "difficulty": "Easy", "explanation": "Python uses the def keyword followed by the function name."},
+    {"q": "What is int('12') + 3?", "options": ["123", "15", "12.3", "An error"], "ans": "15", "category": "Python", "difficulty": "Easy", "explanation": "int converts the text '12' to the integer 12, then 3 is added."},
+    {"q": "What is type(3.14).__name__?", "options": ["int", "str", "float", "decimal"], "ans": "float", "category": "Python", "difficulty": "Easy", "explanation": "A number written with a decimal point is a float in Python."},
+    {"q": "Which built-in collection can be changed after it is created?", "options": ["tuple", "string", "list", "integer"], "ans": "list", "category": "Python", "difficulty": "Medium", "explanation": "Lists are mutable, which means you can add, remove, or replace their items."},
+]
 st.set_page_config(page_title="Quizly | Classroom", page_icon=str(BASE_DIR / "quizly.svg"), layout="wide", initial_sidebar_state="collapsed")
 st.markdown("""
 <style>
@@ -198,10 +210,16 @@ def load_quizzes():
     questions = [x for x in (normalize_question(q) for q in source) if x]
     if not questions:
         questions = [normalize_question(q) for q in DEFAULT_QUESTIONS]
-    quizzes = [{"id": str(uuid.uuid4()), "title": "Starter Quiz",
-                "description": "A short warm-up across Python, databases, and Excel.",
-                "duration_minutes": 5, "shuffle": True, "published": True,
-                "questions": questions}]
+    quizzes = [
+        {"id": str(uuid.uuid4()), "title": "Starter Quiz",
+         "description": "A short warm-up across Python, databases, and Excel.",
+         "duration_minutes": 5, "shuffle": True, "published": True,
+         "questions": questions},
+        {"id": str(uuid.uuid4()), "title": "Python Fundamentals",
+         "description": "Practice Python expressions, lists, dictionaries, functions, and built-in types.",
+         "duration_minutes": 10, "shuffle": True, "published": True,
+         "questions": [normalize_question(q) for q in PYTHON_QUESTIONS]},
+    ]
     save_json(QUIZZES_FILE, quizzes)
     return quizzes
 
@@ -692,6 +710,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 

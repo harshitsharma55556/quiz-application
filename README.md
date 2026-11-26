@@ -19,7 +19,7 @@ You can also double-click `run.bat` after installing Python and the dependencies
 
 - On the sign-in screen, open **Admin / teacher** and create the first teacher account. The setup form closes after the first admin account exists.
 - Students can create their own accounts from **Create student account**.
-- The existing questions in `quiz_data.json` are imported into a published **Starter Quiz** the first time this version runs.
+- The existing questions in `quiz_data.json` become a published **Starter Quiz**, and a 10-question **Python Fundamentals** quiz is included for students.
 - In **Quiz studio**, create a draft, add questions, and publish it. Students then see it under **Available quizzes**.
 
 ## Features
@@ -34,3 +34,4 @@ You can also double-click `run.bat` after installing Python and the dependencies
 ## Local data
 
 The app creates `accounts.json`, `quizzes.json`, and `quiz_results.json` beside `app.py`. Keep those files with the app. This is a local classroom/demo app: its JSON files are stored on the machine running Streamlit, not in a shared cloud database. Do not expose it as a public website and treat the local login as classroom-level access, not production-grade security.
+
