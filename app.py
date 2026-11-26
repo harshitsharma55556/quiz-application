@@ -128,6 +128,31 @@ div.stButton > button:hover { background:#effbff !important; border-color:#12b8d
 div.stButton > button[kind*="primary"],div[data-testid="stFormSubmitButton"] button[kind*="primary"],button[kind*="primary"] { background:linear-gradient(105deg,#08afd0,#087dc0) !important; color:#fff !important; border:0 !important; }
 button[kind*="primary"] *,div[data-testid="stFormSubmitButton"] button * { color:#fff !important; }
 input[type="radio"] { accent-color:#0aaec8 !important; }
+/* Quiz flow: soft lilac canvas, layered purple panels, white answer cards */
+.stApp { background:radial-gradient(ellipse at 8% 4%,#f0cfff 0,transparent 30%),radial-gradient(ellipse at 94% 74%,#e8d6ff 0,transparent 27%),#f7f2ff !important; }
+.hero { background:radial-gradient(ellipse at 88% 12%,#bd70ed,transparent 38%),linear-gradient(118deg,#7b36c7,#9c50dc 60%,#a65bda) !important; border-radius:28px !important; box-shadow:0 18px 42px #7436a32c !important; }
+.hero .hero-kicker,.hero .eyebrow { color:#f4dcff !important; }
+.question-card { background:#fff !important; border:1px solid #eee1fa !important; border-radius:24px !important; box-shadow:0 14px 34px #63379216 !important; }
+.quiz-question-panel { padding:1.5rem 1.7rem; margin:.65rem 0 1rem; border:1px solid #ead9f7; border-radius:26px; background:#fff; box-shadow:0 18px 44px #63379218; }
+.quiz-question-meta { display:flex; justify-content:space-between; align-items:center; color:#8950bc; font:700 .8rem 'Montserrat',sans-serif; letter-spacing:.11em; text-transform:uppercase; }
+.quiz-question-text { margin:1.1rem 0 1.5rem; color:#24203c; font:700 1.75rem/1.35 'Montserrat',sans-serif; letter-spacing:-.03em; }
+.quiz-tag { display:inline-block; margin-right:.45rem; padding:.35rem .75rem; border-radius:999px; color:#78509a; background:#f5eaff; border:1px solid #ead8f7; font:700 .75rem 'Montserrat',sans-serif; }
+.quiz-side-card { padding:1.4rem; margin:.65rem 0 1rem; border:1px solid #ead9f7; border-radius:24px; background:linear-gradient(160deg,#fff,#fbf6ff); box-shadow:0 14px 32px #63379214; }
+.quiz-side-title { margin-bottom:1rem; color:#312345; font:800 1.15rem 'Montserrat',sans-serif; }
+.score-ring { width:168px; height:168px; margin:.4rem auto 1rem; border-radius:50%; display:grid; place-items:center; background:conic-gradient(#9e51d2 var(--score),#eeddf8 var(--score)); box-shadow:0 8px 20px #8c50b222; }
+.score-ring-inner { width:134px; height:134px; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#fff; color:#3d2a52; }
+.score-ring-label { color:#8b55b4; font:700 .85rem 'Montserrat',sans-serif; }.score-ring-value { font:800 2.4rem 'Montserrat',sans-serif; letter-spacing:-.05em; }.score-ring-unit { color:#9a86a8; font:600 .75rem 'Montserrat',sans-serif; }
+.leader-row { display:grid; grid-template-columns:38px 1fr auto; align-items:center; gap:.65rem; padding:.65rem .2rem; border-top:1px solid #f0e8f6; color:#4b4056; }
+.leader-rank { width:30px; height:30px; display:grid; place-items:center; border-radius:50%; background:#f1e4fb; color:#8545b6; font:800 .78rem 'Montserrat',sans-serif; }
+.leader-row:first-child .leader-rank { background:#8545b6; color:#fff; }.leader-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:700; }.leader-score { color:#80509f; font:700 .8rem 'Montserrat',sans-serif; }
+.leader-current { color:#7d3eb1; background:#f8efff; border-radius:10px; padding:.2rem .4rem; font:700 .62rem 'Montserrat',sans-serif; }
+.quiz-meta-strip { display:flex; gap:1.2rem; align-items:center; padding:.85rem 1rem; border:1px solid #e8d9f5; border-radius:16px; background:#fff; color:#6b5d78; font:700 .84rem 'Montserrat',sans-serif; }
+[data-testid="stMetric"] { border-color:#eadcf4 !important; box-shadow:0 10px 24px #6337920d !important; }
+[data-testid="stMetricValue"] { color:#8751bb !important; }
+[data-testid="stProgressBar"] > div > div { background:linear-gradient(90deg,#8c42c7,#c072e9) !important; }
+[data-testid="stRadio"] [role="radiogroup"] label { padding:.55rem .75rem; margin:.35rem 0; border:1px solid #eee2f7; border-radius:13px; background:#fff; font-weight:600; }
+[data-testid="stRadio"] [role="radiogroup"] label:has(input:checked) { border-color:#a65bd4; background:#f7edff; box-shadow:0 0 0 2px #a65bd422; }
+@media(max-width:700px) { .quiz-question-text { font-size:1.35rem; }.quiz-question-panel,.quiz-side-card { padding:1rem; }.score-ring { width:140px;height:140px; }.score-ring-inner { width:112px;height:112px; } }
 </style>
 """, unsafe_allow_html=True)
 
@@ -409,6 +434,31 @@ def render_student_home():
             st.caption(f"{result.get('quiz_title','Quiz')} · {result.get('percentage',0)}% · {result.get('date','')}")
 
 
+def leaderboard_entries(quiz_id, current_user=None, current_score=0, current_total=0):
+    best = {}
+    for saved in st.session_state.results:
+        if saved.get("quiz_id") != quiz_id:
+            continue
+        key = saved.get("username_key") or saved.get("name", "Student").casefold()
+        if key not in best or saved.get("percentage", 0) > best[key].get("percentage", 0):
+            best[key] = {"key": key, "name": saved.get("name", "Student"), "score": saved.get("score", 0), "percentage": saved.get("percentage", 0)}
+    if current_user:
+        key = current_user["username_key"]
+        pct = round(current_score * 100 / current_total) if current_total else 0
+        best[key] = {"key": key, "name": current_user["username"], "score": current_score, "percentage": pct, "current": True}
+    return sorted(best.values(), key=lambda row: (-row.get("percentage", 0), -row.get("score", 0), row["name"].casefold()))[:6]
+
+
+def leaderboard_markup(entries):
+    if not entries:
+        return "<div class='leader-empty'>Complete a quiz to start the class leaderboard.</div>"
+    rows = []
+    for rank, entry in enumerate(entries, 1):
+        current = "<span class='leader-current'>YOU</span>" if entry.get("current") else ""
+        rows.append(f"<div class='leader-row'><span class='leader-rank'>{rank}</span><span class='leader-name'>{html.escape(entry['name'])} {current}</span><span class='leader-score'>{entry['percentage']}% · {entry['score']} pt</span></div>")
+    return "".join(rows)
+
+
 @st.fragment(run_every="1s")
 def render_active_quiz():
     questions = st.session_state.attempt
@@ -425,49 +475,55 @@ def render_active_quiz():
         minutes, seconds = divmod(remaining, 60)
     else:
         minutes, seconds = divmod(int(time.time() - st.session_state.attempt_started), 60)
-    answered = sum(q["id"] in st.session_state.answers for q in questions)
-    top = st.columns([2, 1, 1])
-    top[0].markdown(f"**{html.escape(st.session_state.user['username'])}** <span class='small-muted'>· {answered}/{len(questions)} answered</span>", unsafe_allow_html=True)
-    top[1].metric("Time left" if deadline else "Elapsed", f"{minutes:02d}:{seconds:02d}")
-    top[2].metric("Marked", len(st.session_state.marked))
-    st.progress(answered / len(questions), text=f"{answered} of {len(questions)} answered")
     question = questions[index]
-    st.markdown(f"<div class='question-card'><div class='eyebrow'>{html.escape(st.session_state.attempt_quiz_title)} · QUESTION {index+1:02d}/{len(questions):02d}</div><h2>{html.escape(question['q'])}</h2><span class='pill'>{html.escape(question['category'])}</span><span class='pill'>{html.escape(question['difficulty'])}</span><span class='pill'>{question['points']} point(s)</span></div>", unsafe_allow_html=True)
-    current = st.session_state.answers.get(question["id"])
-    choice = st.radio("Choose one answer", question["options"], index=question["options"].index(current) if current in question["options"] else None, key=f"answer_{question['id']}", label_visibility="collapsed")
-    st.session_state.answers[question["id"]] = choice if choice else st.session_state.answers.get(question["id"])
-    nav = st.columns([1, 1, 2, 1, 1])
-    if nav[0].button("← Previous", disabled=index == 0, use_container_width=True):
-        st.session_state.question_index -= 1
-        st.rerun()
-    marked = st.session_state.marked
-    label = "★ Marked" if question["id"] in marked else "☆ Mark for review"
-    if nav[1].button(label, use_container_width=True):
-        marked.remove(question["id"]) if question["id"] in marked else marked.add(question["id"])
-        st.rerun()
-    if nav[3].button("Next →", disabled=index == len(questions)-1, type="primary", use_container_width=True):
-        st.session_state.question_index += 1
-        st.rerun()
-    if nav[4].button("Finish quiz", use_container_width=True):
-        st.session_state.review = True
-        st.rerun()
-    with st.expander("Jump to a question"):
-        cols = st.columns(min(10, len(questions)))
-        for i, item in enumerate(questions):
-            with cols[i % len(cols)]:
-                label = ("★ " if item["id"] in marked else "") + str(i+1)
-                if st.button(label, key=f"jump_{i}", type="primary" if i == index else "secondary", use_container_width=True):
-                    st.session_state.question_index = i
-                    st.rerun()
-    if st.session_state.review:
-        st.warning(f"{len(questions)-answered} unanswered · {len(marked)} marked for review")
-        left, right = st.columns(2)
-        if left.button("Back to quiz", use_container_width=True):
-            st.session_state.review = False
+    answered = sum(q["id"] in st.session_state.answers for q in questions)
+    current_score = sum(q["points"] for q in questions if st.session_state.answers.get(q["id"]) == q["ans"])
+    possible = sum(q["points"] for q in questions)
+    percent = round(current_score * 100 / possible) if possible else 0
+
+    st.markdown(f"<div class='quiz-meta-strip'><span>{html.escape(st.session_state.attempt_quiz_title)}</span><span>QUESTION {index+1:02d} / {len(questions):02d}</span><span>{answered} ANSWERED</span></div>", unsafe_allow_html=True)
+    left, right = st.columns([1.55, .8], gap="large")
+    with left:
+        st.markdown(f"<div class='quiz-question-panel'><div class='quiz-question-meta'><span>Question {index+1:02d}</span><span>{minutes:02d}:{seconds:02d} {'left' if deadline else 'elapsed'}</span></div><h2 class='quiz-question-text'>{html.escape(question['q'])}</h2><span class='quiz-tag'>{html.escape(question['category'])}</span><span class='quiz-tag'>{html.escape(question['difficulty'])}</span><span class='quiz-tag'>{question['points']} point(s)</span></div>", unsafe_allow_html=True)
+        current = st.session_state.answers.get(question["id"])
+        choice = st.radio("Choose one answer", question["options"], index=question["options"].index(current) if current in question["options"] else None, key=f"answer_{question['id']}", label_visibility="collapsed")
+        st.session_state.answers[question["id"]] = choice if choice else st.session_state.answers.get(question["id"])
+        nav = st.columns([1, 1, 1, 1])
+        if nav[0].button("Previous", disabled=index == 0, use_container_width=True):
+            st.session_state.question_index -= 1
             st.rerun()
-        if right.button("Submit my answers", type="primary", use_container_width=True):
-            finish_attempt()
+        marked = st.session_state.marked
+        mark_label = "Marked for review" if question["id"] in marked else "Mark for review"
+        if nav[1].button(mark_label, use_container_width=True):
+            marked.remove(question["id"]) if question["id"] in marked else marked.add(question["id"])
             st.rerun()
+        if nav[2].button("Next question", disabled=index == len(questions)-1, type="primary", use_container_width=True):
+            st.session_state.question_index += 1
+            st.rerun()
+        if nav[3].button("Finish", use_container_width=True):
+            st.session_state.review = True
+            st.rerun()
+        with st.expander("Jump to a question"):
+            cols = st.columns(min(10, len(questions)))
+            for i, item in enumerate(questions):
+                with cols[i % len(cols)]:
+                    label = ("★ " if item["id"] in marked else "") + str(i+1)
+                    if st.button(label, key=f"jump_{i}", type="primary" if i == index else "secondary", use_container_width=True):
+                        st.session_state.question_index = i
+                        st.rerun()
+        if st.session_state.review:
+            st.warning(f"{len(questions)-answered} unanswered · {len(marked)} marked for review")
+            back, submit = st.columns(2)
+            if back.button("Continue quiz", use_container_width=True):
+                st.session_state.review = False
+                st.rerun()
+            if submit.button("Submit my answers", type="primary", use_container_width=True):
+                finish_attempt()
+                st.rerun()
+    with right:
+        st.markdown(f"<div class='quiz-side-card'><div class='quiz-side-title'>Your score</div><div class='score-ring' style='--score:{percent}%'><div class='score-ring-inner'><span class='score-ring-label'>POINTS</span><span class='score-ring-value'>{current_score}</span><span class='score-ring-unit'>OF {possible}</span></div></div><div class='quiz-side-title'>Progress</div><div class='leader-row'><span class='leader-rank'>✓</span><span class='leader-name'>Completed</span><span class='leader-score'>{answered}/{len(questions)}</span></div><div class='leader-row'><span class='leader-rank'>○</span><span class='leader-name'>Correct so far</span><span class='leader-score'>{sum(st.session_state.answers.get(q['id']) == q['ans'] for q in questions)}</span></div><div class='leader-row'><span class='leader-rank'>★</span><span class='leader-name'>For review</span><span class='leader-score'>{len(st.session_state.marked)}</span></div></div>", unsafe_allow_html=True)
+        entries = leaderboard_entries(st.session_state.attempt_quiz_id, st.session_state.user, current_score, possible)
+        st.markdown(f"<div class='quiz-side-card'><div class='quiz-side-title'>Class leaderboard</div>{leaderboard_markup(entries)}</div>", unsafe_allow_html=True)
 
 
 def render_results():
@@ -475,25 +531,26 @@ def render_results():
     pct = result["percentage"]
     message = "Outstanding work!" if pct >= 90 else "Great progress!" if pct >= 70 else "Keep going — practice builds confidence."
     hero("QUIZ COMPLETE", f"{pct}% · {message}", f"{result['quiz_title']} · Nice work, {result['name']}.")
-    a, b, c, d = st.columns(4)
-    a.metric("Points", f"{result['score']} / {result['total']}")
-    b.metric("Correct", result["correct"])
-    c.metric("Answered", f"{result['answered']} / {result['questions']}")
-    d.metric("Time", f"{result['seconds']//60}m {result['seconds']%60:02d}s")
-    st.progress(pct / 100, text=f"Your score: {pct}%")
+    main_col, side_col = st.columns([1.15, .85], gap="large")
+    with main_col:
+        st.markdown(f"<div class='quiz-side-card'><div class='quiz-side-title'>Your score</div><div class='score-ring' style='--score:{pct}%'><div class='score-ring-inner'><span class='score-ring-label'>TOTAL SCORE</span><span class='score-ring-value'>{result['score']}</span><span class='score-ring-unit'>OF {result['total']} POINTS</span></div></div><div class='leader-row'><span class='leader-rank'>1</span><span class='leader-name'>Correct answers</span><span class='leader-score'>{result['correct']} / {result['questions']}</span></div><div class='leader-row'><span class='leader-rank'>2</span><span class='leader-name'>Completion</span><span class='leader-score'>{result['answered']} / {result['questions']}</span></div><div class='leader-row'><span class='leader-rank'>3</span><span class='leader-name'>Time taken</span><span class='leader-score'>{result['seconds']//60}m {result['seconds']%60:02d}s</span></div></div>", unsafe_allow_html=True)
+        st.progress(pct / 100, text=f"Your score: {pct}%")
+    with side_col:
+        entries = leaderboard_entries(result["quiz_id"], {"username": result["name"], "username_key": result["username_key"]}, result["score"], result["total"])
+        st.markdown(f"<div class='quiz-side-card'><div class='quiz-side-title'>Class leaderboard</div>{leaderboard_markup(entries)}</div>", unsafe_allow_html=True)
+        if result["timed_out"]:
+            st.warning("Time ran out. Your answers were submitted automatically.")
+        if st.button("Back to available quizzes", type="primary", use_container_width=True):
+            reset_attempt()
+            st.session_state.page = "Available quizzes"
+            st.rerun()
     with st.expander("Review your answers", expanded=True):
         for i, item in enumerate(result["details"], 1):
-            st.markdown(f"**{'CORRECT' if item['is_correct'] else 'REVIEW'} · {i}. {item['q']}**")
+            status = "CORRECT" if item["is_correct"] else "REVIEW"
+            st.markdown(f"**{status} · {i}. {item['q']}**")
             st.caption(f"Your answer: {item['answer'] or 'Not answered'} · Correct answer: {item['correct_answer']}")
             if item["explanation"]:
                 st.info(item["explanation"])
-    if result["timed_out"]:
-        st.warning("Time ran out. Your answers were submitted automatically.")
-    if st.button("Back to available quizzes", type="primary"):
-        reset_attempt()
-        st.session_state.page = "Available quizzes"
-        st.rerun()
-
 
 def render_my_results():
     hero("STUDENT SPACE", "My results", "Your quiz attempts and scores are private to your account.")
@@ -635,6 +692,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
 
 
 
