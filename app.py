@@ -181,6 +181,9 @@ input[type="radio"] { accent-color:#0aaec8 !important; }
 .student-empty { padding:2rem; border:1px dashed #cbd3e3; border-radius:20px; background:#ffffffb5; color:#69758d; text-align:center; }
 .student-intro ~ div div.stButton > button { transition:transform .2s ease,box-shadow .2s ease,background .2s ease; }
 .student-intro ~ div div.stButton > button:hover { transform:translateY(-2px); box-shadow:0 7px 18px #3225641b; }
+div[class*="st-key-student_quiz_filter"] [role="radiogroup"] { display:flex; flex-wrap:wrap; gap:.25rem; width:max-content; max-width:100%; padding:.32rem; border:1px solid #e5e6ef; border-radius:999px; background:#f0f1f7; }
+div[class*="st-key-student_quiz_filter"] [role="radiogroup"] label { margin:0 !important; padding:.52rem .9rem !important; border:1px solid transparent !important; border-radius:999px !important; background:transparent !important; transition:color .22s ease,background .22s ease,box-shadow .22s ease,transform .22s ease; }
+div[class*="st-key-student_quiz_filter"] [role="radiogroup"] label:has(input:checked) { border-color:#e7e0fb !important; background:#fff !important; color:#4e3aa4 !important; box-shadow:0 3px 10px #25204b14 !important; transform:translateY(-1px); }
 @media(max-width:760px) { .student-intro { display:block; padding:1.5rem; }.student-focus { margin-top:1.2rem; }.student-quiz-card { min-height:0; } }
 </style>
 """, unsafe_allow_html=True)
@@ -480,22 +483,7 @@ def render_student_home():
         topics = sorted({str(question.get("category", "General")) for quiz in quizzes for question in quiz.get("questions", [])})
         selected_topic = topic_col.selectbox("Topic", ["All topics", *topics], key="student_quiz_topic", label_visibility="collapsed")
         sort_by = sort_col.selectbox("Sort", ["Recommended", "Title A–Z", "Shortest first", "Most questions"], key="student_quiz_sort", label_visibility="collapsed")
-    filter_options = ["All quizzes", "Not started", "Completed"]
-    st.session_state.setdefault("student_quiz_filter", "All quizzes")
-    filter_cols = st.columns([1, 1, 1, 4])
-    with filter_cols[0]:
-        if st.button("All quizzes", key="filter_all", type="primary" if st.session_state.student_quiz_filter == "All quizzes" else "secondary", use_container_width=True):
-            st.session_state.student_quiz_filter = "All quizzes"
-            st.rerun()
-    with filter_cols[1]:
-        if st.button("Not started", key="filter_new", type="primary" if st.session_state.student_quiz_filter == "Not started" else "secondary", use_container_width=True):
-            st.session_state.student_quiz_filter = "Not started"
-            st.rerun()
-    with filter_cols[2]:
-        if st.button("Completed", key="filter_done", type="primary" if st.session_state.student_quiz_filter == "Completed" else "secondary", use_container_width=True):
-            st.session_state.student_quiz_filter = "Completed"
-            st.rerun()
-    view_filter = st.session_state.student_quiz_filter if st.session_state.student_quiz_filter in filter_options else "All quizzes"
+    view_filter = st.radio("Quiz status", ["All quizzes", "Not started", "Completed"], horizontal=True, key="student_quiz_filter", label_visibility="collapsed")
     query = search.strip().casefold()
     visible = []
     for quiz in quizzes:
