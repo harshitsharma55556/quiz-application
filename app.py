@@ -198,7 +198,8 @@ def render_setup():
     c.metric("Your past attempts", len([r for r in st.session_state.results if r.get("name", "").casefold() == st.session_state.get("student_name", "").casefold()]))
 
 
-@st.fragment(run_every="1s")\ndef render_active_quiz():
+@st.fragment(run_every="1s")
+def render_active_quiz():
     questions = st.session_state.attempt
     index = st.session_state.get("question_index", 0)
     if st.session_state.attempt_deadline:
@@ -439,4 +440,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
