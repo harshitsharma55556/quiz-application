@@ -135,10 +135,15 @@ p,label,[data-testid="stWidgetLabel"] p { font-family:'Source Sans 3','Segoe UI'
 [data-testid="stTextInput"] input:focus,[data-testid="stTextArea"] textarea:focus { border-color:#12b8d3 !important; box-shadow:0 0 0 3px #12b8d322 !important; }
 [data-testid="stWidgetLabel"],[data-testid="stWidgetLabel"] p,label,legend { color:#172348 !important; }
 [data-testid="stCaptionContainer"] p { color:#626d88 !important; }
-div.stButton > button { background:#fff !important; color:#0b1942 !important; border:1px solid #cbd7e7 !important; border-radius:12px !important; font:700 1rem 'Montserrat',sans-serif !important; min-height:3.2rem !important; }
-div.stButton > button:hover { background:#effbff !important; border-color:#12b8d3 !important; color:#065f83 !important; }
+div.stButton > button { background:#fff !important; color:#0b1942 !important; border:1px solid #cbd7e7 !important; border-radius:12px !important; font:700 1rem 'Montserrat',sans-serif !important; min-height:3.2rem !important; transition:transform .18s ease,box-shadow .18s ease,background .18s ease,border-color .18s ease,color .18s ease; }
+div.stButton > button:hover { background:#effbff !important; border-color:#12b8d3 !important; color:#065f83 !important; transform:translateY(-2px); box-shadow:0 8px 18px #07113f12; }
+div.stButton > button:active { transform:translateY(0) scale(.985); }
 div.stButton > button[kind*="primary"],div[data-testid="stFormSubmitButton"] button[kind*="primary"],button[kind*="primary"] { background:linear-gradient(105deg,#08afd0,#087dc0) !important; color:#fff !important; border:0 !important; }
 button[kind*="primary"] *,div[data-testid="stFormSubmitButton"] button * { color:#fff !important; }
+div[data-testid="stDownloadButton"] > button { min-height:3.2rem !important; padding:.7rem 1.15rem !important; border:0 !important; border-radius:13px !important; background:linear-gradient(105deg,#08afd0,#087dc0) !important; color:#fff !important; box-shadow:0 8px 20px #087dbb27 !important; font:700 .94rem 'Montserrat',sans-serif !important; transition:transform .18s ease,box-shadow .18s ease,filter .18s ease; }
+div[data-testid="stDownloadButton"] > button * { color:#fff !important; fill:#fff !important; }
+div[data-testid="stDownloadButton"] > button:hover { filter:brightness(1.06); transform:translateY(-2px); box-shadow:0 12px 24px #087dbb38 !important; }
+div[data-testid="stDownloadButton"] > button:focus-visible,div.stButton > button:focus-visible { outline:3px solid #15b9d688 !important; outline-offset:3px; }
 input[type="radio"] { accent-color:#0aaec8 !important; }
 /* Quiz flow: soft lilac canvas, layered purple panels, white answer cards */
 .stApp { background:radial-gradient(ellipse at 8% 4%,#f0cfff 0,transparent 30%),radial-gradient(ellipse at 94% 74%,#e8d6ff 0,transparent 27%),#f7f2ff !important; }
@@ -179,6 +184,9 @@ input[type="radio"] { accent-color:#0aaec8 !important; }
 .student-card-progress { position:relative; display:flex; justify-content:space-between; gap:.6rem; margin-top:.85rem; color:#78839a; font-size:.78rem; }.student-card-progress strong { color:#6449bd; }
 .student-start div.stButton > button { border-radius:0 0 17px 17px !important; margin-top:-.25rem; min-height:3.25rem !important; transition:filter .2s ease,letter-spacing .2s ease,transform .2s ease; }.student-start div.stButton > button:hover { filter:brightness(1.05); letter-spacing:.025em; transform:translateY(-1px); }
 .student-empty { padding:2rem; border:1px dashed #cbd3e3; border-radius:20px; background:#ffffffb5; color:#69758d; text-align:center; }
+.report-title { margin:.15rem 0 .2rem; color:#111b44; font:800 1.45rem 'Montserrat',sans-serif; letter-spacing:-.04em; }.report-subtitle { margin:0 0 1rem; color:#75809a; }
+.report-insight { height:100%; min-height:128px; padding:1rem 1.1rem; border:1px solid #e5e8f1; border-radius:18px; background:linear-gradient(145deg,#fff,#f8f7ff); box-shadow:0 8px 22px #111b4408; }.report-insight-label { color:#77819a; font:700 .68rem 'Montserrat',sans-serif; letter-spacing:.1em; text-transform:uppercase; }.report-insight-value { margin:.5rem 0 .2rem; color:#26234b; font:800 1.75rem 'Montserrat',sans-serif; letter-spacing:-.04em; }.report-insight-note { color:#7e879d; font-size:.82rem; }
+.report-question-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:.8rem; align-items:center; padding:.85rem 0; border-top:1px solid #eceef4; }.report-question-prompt { color:#26304d; font-weight:650; }.report-question-meta { color:#74809a; font-size:.82rem; white-space:nowrap; }.report-accuracy { display:inline-flex; align-items:center; gap:.35rem; padding:.3rem .65rem; border-radius:999px; background:#f5ecff; color:#6943a6; font:800 .75rem 'Montserrat',sans-serif; }
 .student-intro ~ div div.stButton > button { transition:transform .2s ease,box-shadow .2s ease,background .2s ease; }
 .student-intro ~ div div.stButton > button:hover { transform:translateY(-2px); box-shadow:0 7px 18px #3225641b; }
 div[class*="st-key-student_quiz_filter"] [role="radiogroup"] { display:flex; flex-wrap:wrap; gap:.25rem; width:max-content; max-width:100%; padding:.32rem; border:1px solid #e5e6ef; border-radius:999px; background:#f0f1f7; }
@@ -751,27 +759,85 @@ def render_quiz_studio():
 
 
 def render_class_results():
-    hero("TEACHER STUDIO", "Class results", "Review quiz attempts and download a report.")
-    results = st.session_state.results
-    if not results:
+    all_results = st.session_state.results
+    hero("TEACHER STUDIO", "Class results", "Review student progress, spot difficult questions, and export a clear report.")
+    if not all_results:
         st.info("Results will appear here after students complete a quiz.")
         return
-    avg = round(sum(r.get("percentage", 0) for r in results) / len(results))
-    a, b, c = st.columns(3)
-    a.metric("Total attempts", len(results))
-    b.metric("Average score", f"{avg}%")
-    c.metric("Students", len({r.get("username_key", r.get("name", "").casefold()) for r in results}))
-    for result in results[:150]:
-        title = result.get("quiz_title", "Quiz")
-        with st.expander(f"{result.get('name','Student')} · {title} · {result.get('percentage',0)}% · {result.get('date','')}"):
-            st.write(f"Score: **{result.get('score',0)} / {result.get('total',0)}** · Correct: **{result.get('correct',0)} / {result.get('questions',0)}** · Time: **{result.get('seconds',0)//60}m {result.get('seconds',0)%60:02d}s**")
+    available_quizzes = sorted({str(r.get("quiz_title", "Quiz")) for r in all_results}, key=str.casefold)
+    st.markdown("<div class='report-title'>Performance overview</div><p class='report-subtitle'>Filter the class report, inspect attempts, and find the questions students found hardest.</p>", unsafe_allow_html=True)
+    with st.container(border=True):
+        search_col, quiz_col, sort_col = st.columns([1.35, 1.1, 1], gap="medium")
+        student_query = search_col.text_input("Find a student", placeholder="Search student name", key="report_student_search", label_visibility="collapsed")
+        selected_quiz = quiz_col.selectbox("Quiz", ["All quizzes", *available_quizzes], key="report_quiz_filter", label_visibility="collapsed")
+        sort_mode = sort_col.selectbox("Sort attempts", ["Newest first", "Lowest score", "Highest score", "Student A–Z"], key="report_sort", label_visibility="collapsed")
+    filtered = list(all_results)
+    if selected_quiz != "All quizzes":
+        filtered = [r for r in filtered if r.get("quiz_title", "Quiz") == selected_quiz]
+    if student_query.strip():
+        query = student_query.strip().casefold()
+        filtered = [r for r in filtered if query in str(r.get("name", "Student")).casefold()]
+    if sort_mode == "Lowest score":
+        filtered.sort(key=lambda r: (int(r.get("percentage", 0)), str(r.get("name", "")).casefold()))
+    elif sort_mode == "Highest score":
+        filtered.sort(key=lambda r: (-int(r.get("percentage", 0)), str(r.get("name", "")).casefold()))
+    elif sort_mode == "Student A–Z":
+        filtered.sort(key=lambda r: str(r.get("name", "")).casefold())
+    else:
+        filtered.sort(key=lambda r: str(r.get("date", "")), reverse=True)
+    students = {r.get("username_key", r.get("name", "").casefold()) for r in filtered}
+    avg = round(sum(int(r.get("percentage", 0)) for r in filtered) / len(filtered)) if filtered else 0
+    best = max((int(r.get("percentage", 0)) for r in filtered), default=0)
+    metric_cols = st.columns(4, gap="medium")
+    summaries = [("ATTEMPTS", str(len(filtered)), "Matching submissions"), ("CLASS AVERAGE", f"{avg}%" if filtered else "—", "Across filtered attempts"), ("STUDENTS", str(len(students)), "Unique learners"), ("TOP SCORE", f"{best}%" if filtered else "—", "Best filtered attempt")]
+    for col, (label, value, note) in zip(metric_cols, summaries):
+        with col:
+            st.markdown(f"<div class='report-insight'><div class='report-insight-label'>{label}</div><div class='report-insight-value'>{value}</div><div class='report-insight-note'>{note}</div></div>", unsafe_allow_html=True)
+    if not filtered:
+        st.markdown("<div class='student-empty'><strong>No matching results</strong><br>Change the student search or quiz filter.</div>", unsafe_allow_html=True)
+    else:
+        st.caption(f"Showing {len(filtered)} attempt{'s' if len(filtered) != 1 else ''}")
+    for result in filtered[:150]:
+        title = str(result.get("quiz_title", "Quiz"))
+        student = str(result.get("name", "Student"))
+        percentage = int(result.get("percentage", 0))
+        with st.expander(f"{student}  ·  {title}  ·  {percentage}%  ·  {result.get('date', '')}"):
+            overview_cols = st.columns(4)
+            overview_cols[0].metric("Score", f"{result.get('score', 0)} / {result.get('total', 0)}")
+            overview_cols[1].metric("Correct", f"{result.get('correct', 0)} / {result.get('questions', 0)}")
+            overview_cols[2].metric("Answered", f"{result.get('answered', 0)} / {result.get('questions', 0)}")
+            overview_cols[3].metric("Time", f"{result.get('seconds', 0)//60}m {result.get('seconds', 0)%60:02d}s")
+            if result.get("timed_out"):
+                st.warning("This attempt reached the time limit and was submitted automatically.")
+            details = result.get("details", [])
+            for number, detail in enumerate(details, 1):
+                with st.container(border=True):
+                    status = "Correct" if detail.get("is_correct") else "Review"
+                    st.markdown(f"**{number}. {html.escape(str(detail.get('q', 'Question')))}** · {status}")
+                    st.caption(f"Student answer: {detail.get('answer') or 'Not answered'} · Correct answer: {detail.get('correct_answer', '—')}")
+                    if detail.get("explanation"):
+                        st.info(detail["explanation"])
+    question_stats = {}
+    for result in filtered:
+        for detail in result.get("details", []):
+            prompt = str(detail.get("q", "Question"))
+            stats = question_stats.setdefault(prompt, {"attempts": 0, "correct": 0})
+            stats["attempts"] += 1
+            stats["correct"] += int(bool(detail.get("is_correct")))
+    if question_stats:
+        ranked_questions = sorted(question_stats.items(), key=lambda pair: (pair[1]["correct"] / pair[1]["attempts"], pair[0]))
+        with st.expander("Question insights · hardest first", expanded=False):
+            st.caption("Accuracy is based on the selected student attempts. Use this view to decide what to review with the class.")
+            for prompt, stats in ranked_questions[:10]:
+                accuracy = round(stats["correct"] * 100 / stats["attempts"])
+                st.markdown(f"<div class='report-question-row'><span class='report-question-prompt'>{html.escape(prompt)}</span><span class='report-question-meta'><span class='report-accuracy'>{accuracy}% accuracy</span> · {stats['attempts']} attempt{'s' if stats['attempts'] != 1 else ''}</span></div>", unsafe_allow_html=True)
     output = io.StringIO()
     fields = ["name", "quiz_title", "date", "percentage", "score", "total", "correct", "answered", "questions", "seconds", "timed_out"]
     writer = csv.DictWriter(output, fieldnames=fields)
     writer.writeheader()
-    for result in results:
+    for result in filtered:
         writer.writerow({key: result.get(key) for key in fields})
-    st.download_button("Download class results (CSV)", output.getvalue(), file_name="quiz_results.csv", mime="text/csv")
+    st.download_button("Download filtered report  ↓", output.getvalue(), file_name="quiz_results.csv", mime="text/csv", disabled=not bool(filtered))
 
 
 def main():
