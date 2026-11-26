@@ -230,7 +230,7 @@ def hero(kicker, title, subtitle):
 
 def render_auth():
     published = sum(bool(q.get("published")) for q in st.session_state.quizzes)
-    st.markdown('''<header class="brandbar"><div class="brand-lockup"><div class="brand-logo">Q</div><div class="brand-name">QUIZLY</div><div class="brand-tag">LEARN +<br>GROW</div></div><div class="brand-actions"><span>CLASSROOM QUIZZES</span><span>JOIN <b class="accent">|</b> LOG IN</span></div></header>''', unsafe_allow_html=True)
+    st.markdown('''<header class="brandbar"><div class="brand-lockup"><div class="brand-logo">Q</div><div class="brand-name">QUIZLY</div><div class="brand-tag">LEARN +<br>GROW</div></div></header>''', unsafe_allow_html=True)
     st.markdown('''<nav class="public-nav"><span>STUDENT QUIZZES</span><span>LEARNING PROGRESS</span><span>TEACHER STUDIO</span><span>BUILD · PRACTICE · GROW</span></nav>''', unsafe_allow_html=True)
     st.markdown(f'''<section class="landing-hero"><div class="landing-inner"><div class="landing-copy"><div class="landing-kicker">A CLASSROOM FOR CURIOSITY</div><h1 class="landing-title">Learn. <em>Grow.</em><br>Show what you know.</h1><p class="landing-subtitle">Take thoughtful quizzes from your teacher, build confidence with every answer, and keep your progress in view.</p><div class="landing-stats"><strong>{published}</strong> PUBLISHED QUIZZES &nbsp;·&nbsp; <strong>2</strong> SPACES TO LEARN</div></div><div class="landing-art"><div class="art-glow"></div><div class="art-card"><small>YOUR NEXT CHALLENGE</small><div class="art-score">Ready?</div><div class="art-progress"><span></span></div><small>ONE QUESTION AT A TIME</small></div><div class="art-chip">✦ &nbsp; Keep growing</div></div></div></section>''', unsafe_allow_html=True)
     st.markdown("### Start here")
@@ -239,16 +239,16 @@ def render_auth():
     student_col, teacher_col = st.columns(2, gap="medium")
     with student_col:
         with st.container(border=True):
-            st.markdown("### 🎓  Student space")
+            st.markdown("### 🎓  Student Login")
             st.caption("Take published quizzes and follow your scores.")
-            if st.button("Continue as student", key="select_student", type="primary" if role == "student" else "secondary", use_container_width=True):
+            if st.button("Student Login", key="select_student", type="primary" if role == "student" else "secondary", use_container_width=True):
                 st.session_state.auth_role = "student"
                 st.rerun()
     with teacher_col:
         with st.container(border=True):
-            st.markdown("### 🧑‍🏫  Teacher studio")
+            st.markdown("### 🧑‍🏫  Admin Login")
             st.caption("Create quizzes, publish them, and review class results.")
-            if st.button("Continue as teacher", key="select_teacher", type="primary" if role == "admin" else "secondary", use_container_width=True):
+            if st.button("Admin Login", key="select_teacher", type="primary" if role == "admin" else "secondary", use_container_width=True):
                 st.session_state.auth_role = "admin"
                 st.rerun()
     if role == "student":
@@ -305,7 +305,7 @@ def render_auth():
             with st.form("admin_login"):
                 username = st.text_input("Teacher username", key="a_login_user")
                 password = st.text_input("Password", type="password", key="a_login_pass")
-                submit = st.form_submit_button("Sign in to teacher studio", type="primary", use_container_width=True)
+                submit = st.form_submit_button("Admin Login", type="primary", use_container_width=True)
             if submit:
                 account = verify_account(username, password)
                 if account and account["role"] == "admin":
@@ -610,6 +610,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
