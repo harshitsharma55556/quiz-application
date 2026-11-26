@@ -70,6 +70,20 @@ div.stButton > button[kind="primary"],div[data-testid="stFormSubmitButton"] butt
 .stTabs button[data-baseweb="tab"][aria-selected="true"] { color:#6753d8 !important; }
 .stTabs [data-baseweb="tab-highlight"],[data-baseweb="tab-border"] { background:#6753d8 !important; }
 button[kind*="primary"],div[data-testid="stFormSubmitButton"] button { background:linear-gradient(100deg,#7762e4,#5c49c8) !important; color:#fff !important; border:0 !important; }
+/* Larger, calmer typography and Figma-inspired login role cards */
+body,.stApp,[data-testid="stWidgetLabel"] p,label,p { font-size:1.05rem; }
+h1 { font-size:2.8rem !important; }
+h2 { font-size:1.95rem !important; }
+h3 { font-size:1.4rem !important; }
+[data-testid="stWidgetLabel"] p,label { font-weight:600 !important; }
+[data-testid="stTextInput"] input,[data-testid="stTextArea"] textarea { font-size:1.05rem !important; min-height:3.2rem; }
+div.stButton > button,div.stDownloadButton > button { font-size:1.02rem !important; min-height:3.1rem !important; }
+[data-testid="stVerticalBlockBorderWrapper"] { border-radius:20px !important; border-color:#e5e2f3 !important; background:#fff; box-shadow:0 9px 25px #30286b0b; }
+.login-title { font-family:'Manrope','DM Sans',sans-serif; font-size:3.1rem !important; line-height:1.06; margin:1.4rem 0 1rem; }
+.login-copy { color:#666a82 !important; font-size:1.18rem !important; line-height:1.65; max-width:38rem; }
+.login-stat { margin-top:2rem; padding:1rem 1.2rem; display:inline-block; border-radius:16px; background:#fff; border:1px solid #e8e4f5; color:#666a82; }
+.login-stat strong { color:#6753d8; font-size:1.5rem; font-family:'Manrope',sans-serif; }
+@media (max-width:700px) { .login-title { font-size:2.35rem !important; } h1 { font-size:2.2rem !important; } body,p,label { font-size:1rem; } }
 </style>
 """, unsafe_allow_html=True)
 
@@ -187,16 +201,33 @@ def hero(kicker, title, subtitle):
 
 
 def render_auth():
-    left, right = st.columns([1, 1], gap="large")
+    left, right = st.columns([0.9, 1.1], gap="large")
     with left:
-        st.markdown('<div class="brand-mark">✦</div><div class="hero-kicker" style="margin-top:1.3rem">YOUR CLASSROOM, IN FOCUS</div><h1 style="font-family:Manrope,sans-serif;line-height:1.08">Small quizzes.<br>Big progress.</h1><p style="font-size:1.08rem;color:#70738a">Sign in to find your next quiz, or open the teacher studio to build one.</p>', unsafe_allow_html=True)
+        st.markdown('<div class="brand-mark">✦</div><div class="hero-kicker" style="margin-top:1.3rem">YOUR CLASSROOM, IN FOCUS</div><h1 class="login-title">A brighter way<br>to learn together.</h1><p class="login-copy">Practice with quizzes from your teacher, track your progress, and keep learning one question at a time.</p>', unsafe_allow_html=True)
         published = sum(bool(q.get("published")) for q in st.session_state.quizzes)
-        st.markdown(f"**{published}** quizzes ready for students")
+        st.markdown(f"<div class='login-stat'><strong>{published}</strong><span> quizzes ready for students</span></div>", unsafe_allow_html=True)
     with right:
-        student_tab, admin_tab = st.tabs(["Student", "Admin / teacher"])
-        with student_tab:
-            login_tab, signup_tab = st.tabs(["Sign in", "Create student account"])
-            with login_tab:
+        st.markdown("### Choose your space")
+        role = st.session_state.get("auth_role", "student")
+        student_col, teacher_col = st.columns(2, gap="medium")
+        with student_col:
+            with st.container(border=True):
+                st.markdown("### 🎓 Student")
+                st.caption("Find published quizzes and check your scores.")
+                if st.button("Student sign in", key="select_student", type="primary" if role == "student" else "secondary", use_container_width=True):
+                    st.session_state.auth_role = "student"
+                    st.rerun()
+        with teacher_col:
+            with st.container(border=True):
+                st.markdown("### 🧑‍🏫 Teacher")
+                st.caption("Create quizzes, manage questions, and view results.")
+                if st.button("Teacher sign in", key="select_teacher", type="primary" if role == "admin" else "secondary", use_container_width=True):
+                    st.session_state.auth_role = "admin"
+                    st.rerun()
+        st.divider()
+        if role == "student":
+            mode = st.radio("Student access", ["Sign in", "Create student account"], horizontal=True, label_visibility="collapsed", key="student_auth_mode")
+            if mode == "Sign in":
                 with st.form("student_login"):
                     username = st.text_input("Username", key="s_login_user")
                     password = st.text_input("Password", type="password", key="s_login_pass")
@@ -208,7 +239,7 @@ def render_auth():
                         st.session_state.page = "Available quizzes"
                         st.rerun()
                     st.error("We couldn’t sign you in as a student. Check your details or create an account.")
-            with signup_tab:
+            else:
                 with st.form("student_signup"):
                     username = st.text_input("Choose a username", key="s_signup_user", help="3–24 letters, numbers, dots, dashes, or underscores")
                     password = st.text_input("Create a password", type="password", key="s_signup_pass", help="At least 8 characters")
@@ -223,8 +254,8 @@ def render_auth():
                     else:
                         st.session_state.accounts.append(create_account(username.strip(), password, "student"))
                         save_accounts()
-                        st.success("Account created. Sign in to continue.")
-        with admin_tab:
+                        st.success("Account created. Choose Sign in to continue.")
+        else:
             first_admin = not any(a.get("role") == "admin" for a in st.session_state.accounts)
             if first_admin:
                 st.info("First-time setup: create the teacher account for this app. This setup closes after the first admin is created.")
@@ -256,7 +287,6 @@ def render_auth():
                         st.session_state.page = "Quiz studio"
                         st.rerun()
                     st.error("We couldn’t sign you in as an admin. Check your teacher account details.")
-
 
 def logout():
     reset_attempt()
@@ -560,5 +590,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
