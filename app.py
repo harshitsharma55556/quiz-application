@@ -17,6 +17,8 @@ import streamlit as st
 BASE_DIR = Path(__file__).resolve().parent
 LEGACY_FILE = BASE_DIR / "quiz_data.json"
 QUIZZES_FILE = BASE_DIR / "quizzes.json"
+QUIZ_LIBRARY_FILE = BASE_DIR / "quiz_library.json"
+QUIZ_LIBRARY_MARKER = BASE_DIR / ".quiz_library_seeded"
 ACCOUNTS_FILE = BASE_DIR / "accounts.json"
 RESULTS_FILE = BASE_DIR / "quiz_results.json"
 PASSWORD_ROUNDS = 310_000
@@ -232,23 +234,51 @@ def normalize_question(item):
 def load_quizzes():
     stored = load_json(QUIZZES_FILE, None)
     if isinstance(stored, list):
-        return stored
-    legacy = load_json(LEGACY_FILE, DEFAULT_QUESTIONS)
-    source = legacy if isinstance(legacy, list) else DEFAULT_QUESTIONS
-    questions = [x for x in (normalize_question(q) for q in source) if x]
-    if not questions:
-        questions = [normalize_question(q) for q in DEFAULT_QUESTIONS]
-    quizzes = [
-        {"id": str(uuid.uuid4()), "title": "Starter Quiz",
-         "description": "A short warm-up across Python, databases, and Excel.",
-         "duration_minutes": 5, "shuffle": True, "published": True,
-         "questions": questions},
-        {"id": str(uuid.uuid4()), "title": "Python Fundamentals",
-         "description": "Practice Python expressions, lists, dictionaries, functions, and built-in types.",
-         "duration_minutes": 10, "shuffle": True, "published": True,
-         "questions": [normalize_question(q) for q in PYTHON_QUESTIONS]},
-    ]
-    save_json(QUIZZES_FILE, quizzes)
+        quizzes = stored
+    else:
+        legacy = load_json(LEGACY_FILE, DEFAULT_QUESTIONS)
+        source = legacy if isinstance(legacy, list) else DEFAULT_QUESTIONS
+        questions = [x for x in (normalize_question(q) for q in source) if x]
+        if not questions:
+            questions = [normalize_question(q) for q in DEFAULT_QUESTIONS]
+        quizzes = [
+            {"id": str(uuid.uuid4()), "title": "Starter Quiz",
+             "description": "A short warm-up across Python, databases, and Excel.",
+             "duration_minutes": 5, "shuffle": True, "published": True,
+             "questions": questions},
+            {"id": str(uuid.uuid4()), "title": "Python Fundamentals",
+             "description": "Practice Python expressions, lists, dictionaries, functions, and built-in types.",
+             "duration_minutes": 10, "shuffle": True, "published": True,
+             "questions": [normalize_question(q) for q in PYTHON_QUESTIONS]},
+        ]
+
+    # Import the bundled quiz library once into local data so teacher changes are
+    # preserved and deleted starter quizzes do not reappear on every rerun.
+    library_saved = False
+    if not QUIZ_LIBRARY_MARKER.exists():
+        library = load_json(QUIZ_LIBRARY_FILE, [])
+        ids = {str(quiz.get("id", "")) for quiz in quizzes if isinstance(quiz, dict)}
+        titles = {str(quiz.get("title", "")).strip().casefold() for quiz in quizzes if isinstance(quiz, dict)}
+        for template in library if isinstance(library, list) else []:
+            if not isinstance(template, dict):
+                continue
+            quiz_id = str(template.get("id") or uuid.uuid4())
+            title = str(template.get("title", "")).strip()
+            if not title or quiz_id in ids or title.casefold() in titles:
+                continue
+            questions = [item for item in (normalize_question(q) for q in template.get("questions", [])) if item]
+            if not questions:
+                continue
+            quiz = {**template, "id": quiz_id, "title": title, "questions": questions}
+            quizzes.append(quiz)
+            ids.add(quiz_id)
+            titles.add(title.casefold())
+        if library:
+            save_json(QUIZZES_FILE, quizzes)
+            QUIZ_LIBRARY_MARKER.write_text("installed\n", encoding="utf-8")
+            library_saved = True
+    if not isinstance(stored, list) and not library_saved:
+        save_json(QUIZZES_FILE, quizzes)
     return quizzes
 
 
@@ -711,25 +741,83 @@ def render_quiz_studio():
     if not st.session_state.quizzes:
         st.info("Your quiz studio is ready. Create a quiz to get started.")
         return
-    st.markdown("### Your quizzes")
+    st.markdown("### Your quiz library")
+    st.caption("Publish a ready-to-use quiz, customize a copy, or keep a quiz as a private draft.")
     for quiz in st.session_state.quizzes:
         status = "PUBLISHED" if quiz.get("published") else "DRAFT"
         with st.expander(f"{quiz['title']} · {status} · {len(quiz.get('questions', []))} questions"):
-            st.caption(quiz.get("description") or "No description yet.")
-            c1, c2, c3 = st.columns([1, 1, 2])
+            with st.form(f"quizsettings_{quiz['id']}"):
+                settings_title = st.text_input("Quiz title", value=quiz.get("title", ""), key=f"title_{quiz['id']}")
+                settings_description = st.text_area("Student instructions", value=quiz.get("description", ""), key=f"description_{quiz['id']}")
+                settings_cols = st.columns(2)
+                duration_options = [0, 5, 10, 15, 20, 30]
+                current_duration = int(quiz.get("duration_minutes", 0) or 0)
+                if current_duration not in duration_options:
+                    duration_options.append(current_duration)
+                    duration_options.sort()
+                settings_duration = settings_cols[0].selectbox(
+                    "Time limit", duration_options,
+                    index=duration_options.index(current_duration),
+                    format_func=lambda n: "No time limit" if n == 0 else f"{n} minutes",
+                    key=f"duration_{quiz['id']}",
+                )
+                settings_shuffle = settings_cols[1].toggle("Shuffle question order", value=bool(quiz.get("shuffle", True)), key=f"shuffle_{quiz['id']}")
+                save_settings = st.form_submit_button("Save quiz details", type="primary")
+            if save_settings:
+                if not settings_title.strip():
+                    st.error("A quiz needs a title.")
+                else:
+                    quiz["title"] = settings_title.strip()
+                    quiz["description"] = settings_description.strip()
+                    quiz["duration_minutes"] = settings_duration
+                    quiz["shuffle"] = settings_shuffle
+                    save_quizzes()
+                    st.rerun()
+            c1, c2, c3, c4 = st.columns([1, 1, 1, 1.8], gap="small")
             if c1.button("Unpublish" if quiz.get("published") else "Publish quiz", key=f"pub_{quiz['id']}", type="primary" if not quiz.get("published") else "secondary", disabled=not quiz.get("questions")):
                 quiz["published"] = not quiz.get("published", False)
                 save_quizzes()
                 st.rerun()
-            if c2.button("Delete quiz", key=f"delquiz_{quiz['id']}"):
+            if c2.button("Copy as draft", key=f"copyquiz_{quiz['id']}"):
+                existing_titles = {str(item.get("title", "")).casefold() for item in st.session_state.quizzes}
+                base_title = f"{quiz['title']} (Copy)"
+                new_title = base_title
+                suffix = 2
+                while new_title.casefold() in existing_titles:
+                    new_title = f"{base_title} {suffix}"
+                    suffix += 1
+                copied_questions = []
+                for question in quiz.get("questions", []):
+                    copied = dict(question)
+                    copied["id"] = str(uuid.uuid4())
+                    copied_questions.append(copied)
+                duplicate = {
+                    "id": str(uuid.uuid4()), "title": new_title,
+                    "description": quiz.get("description", ""),
+                    "duration_minutes": quiz.get("duration_minutes", 0),
+                    "shuffle": quiz.get("shuffle", True), "published": False,
+                    "questions": copied_questions,
+                    "created_at": datetime.now().astimezone().isoformat(timespec="minutes"),
+                }
+                st.session_state.quizzes.insert(0, duplicate)
+                save_quizzes()
+                st.rerun()
+            if c3.button("Delete quiz", key=f"delquiz_{quiz['id']}"):
                 st.session_state.quizzes = [item for item in st.session_state.quizzes if item["id"] != quiz["id"]]
                 save_quizzes()
                 st.rerun()
-            c3.caption(f"{len(quiz.get('questions', []))} questions · {quiz.get('duration_minutes', 0) or 'No'} minute limit")
+            c4.caption(f"{len(quiz.get('questions', []))} questions · {quiz.get('duration_minutes', 0) or 'No'} minute limit")
             st.markdown("#### Questions")
             for number, question in enumerate(quiz.get("questions", []), 1):
-                st.markdown(f"**{number}. {question['q']}**")
-                st.caption(f"{question['category']} · {question['difficulty']} · Correct answer: {question['ans']}")
+                question_col, remove_col = st.columns([8, 1])
+                question_col.markdown(f"**{number}. {html.escape(str(question['q']))}**")
+                question_col.caption(f"{question['category']} · {question['difficulty']} · Correct answer: {html.escape(str(question['ans']))}")
+                if remove_col.button("Remove", key=f"remove_question_{quiz['id']}_{question.get('id', number)}"):
+                    quiz["questions"] = [item for item in quiz.get("questions", []) if item.get("id") != question.get("id")]
+                    if not quiz.get("questions"):
+                        quiz["published"] = False
+                    save_quizzes()
+                    st.rerun()
             st.markdown("#### Add a question")
             with st.form(f"addq_{quiz['id']}", clear_on_submit=True):
                 prompt = st.text_area("Question", key=f"prompt_{quiz['id']}")

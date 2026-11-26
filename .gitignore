@@ -1,4 +1,5 @@
 accounts.json
 quizzes.json
 quiz_results.json
+.quiz_library_seeded
 *.tmp

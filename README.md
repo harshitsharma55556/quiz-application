@@ -1,6 +1,6 @@
-# Quizly — classroom quiz app
+# Quizly | Classroom Quiz Platform
 
-A Streamlit classroom quiz app with separate student and teacher accounts. Students can see only quizzes published by a teacher. Teachers create quizzes, add questions, and publish or unpublish them from the studio.
+Quizly is a classroom quiz platform with separate student and teacher spaces. Students can discover published quizzes, take timed attempts, review feedback, and follow their progress. Teachers can build and publish assessments, review class performance, and download filtered reports.
 
 ## Run on Windows
 
@@ -14,23 +14,24 @@ To start it manually, open a terminal in this folder and run:
    py -m streamlit run app.py --server.port 8504
    ```
 
-## First-time setup
+## First-time setup and demo
 
-- On the sign-in screen, open **Admin / teacher** and create the first teacher account. The setup form closes after the first admin account exists.
-- Students can create their own accounts from **Create student account**.
-- The existing questions in `quiz_data.json` become a published **Starter Quiz**, and a 10-question **Python Fundamentals** quiz is included for students.
-- In **Quiz studio**, create a draft, add questions, and publish it. Students then see it under **Available quizzes**.
+- On the sign-in screen, choose **Admin Login** and create the first teacher account. Teacher setup is available only until the first teacher account is created.
+- Create a student account with **Create student account**, or sign in to an existing student account.
+- Start with seven published quizzes: Starter Quiz, Python Fundamentals, Web Development Foundations, Computer Science Essentials, Mathematics & Data Reasoning, General Science: Core Ideas, and Digital Citizenship & Cyber Safety.
+- In **Quiz studio**, copy a sample as a draft, edit its details and questions, or create a new quiz from scratch. Publish it when it is ready; students then see it in **Available quizzes**.
 
 ## Features
 
 - Separate student and teacher sign-in. Passwords are stored as salted PBKDF2 hashes.
-- Students see published quizzes and their own attempts.
-- Teachers can create quizzes, add questions, set a timer and shuffle order, then publish or unpublish them.
+- Student quiz discovery with topic filters, search, sorting, completion status, score summaries, and recent attempts.
+- Seven ready-to-play quizzes across programming, web development, computer science, mathematics, science, and digital citizenship.
+- Teacher quiz studio with ready-made quizzes, create-from-scratch forms, duplicate-as-draft, editable quiz details, question add/remove controls, timed quizzes, and publish controls.
 - Timed attempts, question navigation, review marks, answer review, explanations, weighted scoring, and score history.
-- Teacher class results with CSV download.
-- Responsive interface using Manrope and DM Sans with system-font fallbacks.
+- Teacher reports with quiz and student filters, sortable attempts, per-attempt answer review, hardest-question accuracy insights, and filtered CSV export.
+- Responsive interface with high-contrast buttons, clear feedback, and animated controls.
 
 ## Local data
 
-The app creates `accounts.json`, `quizzes.json`, and `quiz_results.json` beside `app.py`. Keep those files with the app. This is a local classroom/demo app: its JSON files are stored on the machine running Streamlit, not in a shared cloud database. Do not expose it as a public website and treat the local login as classroom-level access, not production-grade security.
+The app keeps `accounts.json`, `quizzes.json`, and `quiz_results.json` beside `app.py`; keep these local files with the app to retain accounts, teacher edits, and scores. The ready-made quiz templates live in `quiz_library.json` and are imported once into local quiz data. This is a local classroom/demo app: its JSON files are stored on the machine running Streamlit, not in a shared cloud database. Treat the login as classroom-level access, not production-grade security.
 

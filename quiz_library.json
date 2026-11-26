@@ -1,0 +1,92 @@
+[
+  {
+    "id": "builtin-web-foundations",
+    "title": "Web Development Foundations",
+    "description": "Build confidence with HTML, CSS, JavaScript, links, and accessible page structure.",
+    "duration_minutes": 10,
+    "shuffle": true,
+    "published": true,
+    "questions": [
+      {"q":"Which language describes the structure and meaning of a web page?","options":["HTML","CSS","SQL","Bash"],"ans":"HTML","category":"Web Development","difficulty":"Easy","explanation":"HTML marks up page content and structure. CSS controls presentation, while JavaScript adds behavior."},
+      {"q":"Which technology is mainly used to control colors, spacing, and typography on a web page?","options":["CSS","HTML","Python","JSON"],"ans":"CSS","category":"Web Development","difficulty":"Easy","explanation":"Cascading Style Sheets (CSS) control how HTML content is presented."},
+      {"q":"Which HTML element creates a hyperlink?","options":["<a>","<p>","<img>","<table>"],"ans":"<a>","category":"Web Development","difficulty":"Easy","explanation":"The anchor element, <a>, creates a link. Its href attribute supplies the destination."},
+      {"q":"Which attribute tells a link where to go?","options":["href","src","alt","class"],"ans":"href","category":"Web Development","difficulty":"Easy","explanation":"The href attribute contains the URL or page location that an anchor should open."},
+      {"q":"What is the main purpose of JavaScript in a web page?","options":["Add interactive behavior","Store image files","Define database tables","Replace the internet connection"],"ans":"Add interactive behavior","category":"Web Development","difficulty":"Easy","explanation":"JavaScript can respond to user actions, update page content, and implement interactive features."},
+      {"q":"Which element is the most appropriate landmark for the main unique content of a page?","options":["<main>","<span>","<b>","<meta>"],"ans":"<main>","category":"Accessibility","difficulty":"Medium","explanation":"The <main> landmark identifies the central content and helps assistive technology users navigate a page."},
+      {"q":"What does responsive web design aim to do?","options":["Adapt layouts to different screen sizes","Make every page load without a network","Hide all images","Convert a website into a spreadsheet"],"ans":"Adapt layouts to different screen sizes","category":"Web Development","difficulty":"Medium","explanation":"Responsive layouts adapt content to phones, tablets, and desktop screens."},
+      {"q":"What does HTTPS help provide for data sent between a browser and a website?","options":["Encryption in transit","A guarantee that every website is honest","Unlimited storage","Automatic backups"],"ans":"Encryption in transit","category":"Cyber Safety","difficulty":"Medium","explanation":"HTTPS encrypts the connection. It does not by itself prove that a site or its content is trustworthy."}
+    ]
+  },
+  {
+    "id": "builtin-computing-essentials",
+    "title": "Computer Science Essentials",
+    "description": "Review algorithms, data, hardware, programming concepts, and databases.",
+    "duration_minutes": 10,
+    "shuffle": true,
+    "published": true,
+    "questions": [
+      {"q":"What is an algorithm?","options":["A clear sequence of steps for solving a problem","A type of computer screen","A password stored in a browser","A programming language only"],"ans":"A clear sequence of steps for solving a problem","category":"Computer Science","difficulty":"Easy","explanation":"An algorithm describes a finite, ordered method for completing a task or solving a problem."},
+      {"q":"Which part of a computer carries out program instructions?","options":["CPU","Monitor","Keyboard","Speaker"],"ans":"CPU","category":"Hardware","difficulty":"Easy","explanation":"The central processing unit executes instructions and performs calculations."},
+      {"q":"What is a common characteristic of RAM?","options":["It is temporary working memory","It permanently stores every file without power","It is an input device","It prints documents"],"ans":"It is temporary working memory","category":"Hardware","difficulty":"Easy","explanation":"RAM holds data programs are currently using and is generally cleared when the computer powers off."},
+      {"q":"How many different digits are used in the binary number system?","options":["2","8","10","16"],"ans":"2","category":"Data","difficulty":"Easy","explanation":"Binary uses two digits, 0 and 1, to represent values."},
+      {"q":"In programming, what is a variable commonly used for?","options":["Giving a name to a value that a program can use","Cooling the processor","Connecting a computer to a printer","Formatting a web page"],"ans":"Giving a name to a value that a program can use","category":"Programming","difficulty":"Easy","explanation":"A variable is a named reference to data used by a program."},
+      {"q":"What does a loop do in a program?","options":["Repeats a block of instructions","Deletes the operating system","Changes a monitor's resolution","Encrypts every file automatically"],"ans":"Repeats a block of instructions","category":"Programming","difficulty":"Easy","explanation":"Loops repeat instructions while a condition holds or for each item in a sequence."},
+      {"q":"In a relational database table, what does a row usually represent?","options":["One record","A font style","A computer network","A formula"],"ans":"One record","category":"Databases","difficulty":"Medium","explanation":"Each row stores one record, with columns describing its fields."},
+      {"q":"Which description best fits open-source software?","options":["Its source code is available under a license that allows specified use and sharing","It can only run without internet","It has no author","It is always free of all conditions"],"ans":"Its source code is available under a license that allows specified use and sharing","category":"Digital Literacy","difficulty":"Medium","explanation":"Open-source licenses make source code available and permit certain uses; each license still has terms."}
+    ]
+  },
+  {
+    "id": "builtin-math-reasoning",
+    "title": "Mathematics & Data Reasoning",
+    "description": "Practice percentages, averages, geometry, ratios, equations, and probability.",
+    "duration_minutes": 12,
+    "shuffle": true,
+    "published": true,
+    "questions": [
+      {"q":"What is 25% of 80?","options":["20","25","40","60"],"ans":"20","category":"Percentages","difficulty":"Easy","explanation":"25% is one quarter, and one quarter of 80 is 20."},
+      {"q":"What is the mean of 4, 6, and 8?","options":["6","5","7","18"],"ans":"6","category":"Statistics","difficulty":"Easy","explanation":"Add the values (4 + 6 + 8 = 18) and divide by the three values: 18 ÷ 3 = 6."},
+      {"q":"Solve for x: x + 7 = 12","options":["5","7","12","19"],"ans":"5","category":"Algebra","difficulty":"Easy","explanation":"Subtract 7 from both sides: x = 12 − 7 = 5."},
+      {"q":"What is the sum of the interior angles of a triangle?","options":["180°","90°","270°","360°"],"ans":"180°","category":"Geometry","difficulty":"Easy","explanation":"The three interior angles of every Euclidean triangle add up to 180 degrees."},
+      {"q":"A rectangle is 8 cm long and 3 cm wide. What is its area?","options":["24 cm²","11 cm²","22 cm²","48 cm²"],"ans":"24 cm²","category":"Geometry","difficulty":"Easy","explanation":"Area of a rectangle is length × width: 8 × 3 = 24 square centimetres."},
+      {"q":"A bag has 2 red and 3 blue counters. What is the probability of picking a red counter at random?","options":["2/5","3/5","1/2","2/3"],"ans":"2/5","category":"Probability","difficulty":"Medium","explanation":"There are 2 favorable counters out of 5 counters in total, so the probability is 2/5."},
+      {"q":"The ratio of apples to oranges is 2:3. If there are 25 fruits, how many are apples?","options":["10","12","15","20"],"ans":"10","category":"Ratios","difficulty":"Medium","explanation":"There are 5 equal parts altogether. Each part is 25 ÷ 5 = 5, so apples are 2 × 5 = 10."},
+      {"q":"Which decimal is equal to 3/4?","options":["0.75","0.34","0.25","1.25"],"ans":"0.75","category":"Fractions","difficulty":"Easy","explanation":"Divide 3 by 4 to get 0.75."}
+    ]
+  },
+  {
+    "id": "builtin-general-science",
+    "title": "General Science: Core Ideas",
+    "description": "Explore forces, cells, matter, Earth, sound, and photosynthesis.",
+    "duration_minutes": 10,
+    "shuffle": true,
+    "published": true,
+    "questions": [
+      {"q":"Which gas do plants take in from the air during photosynthesis?","options":["Carbon dioxide","Oxygen","Helium","Hydrogen"],"ans":"Carbon dioxide","category":"Biology","difficulty":"Easy","explanation":"Plants use carbon dioxide and water, with light energy, to make sugars and release oxygen."},
+      {"q":"What is the basic structural unit of living organisms?","options":["Cell","Rock","Atom only","Organ"],"ans":"Cell","category":"Biology","difficulty":"Easy","explanation":"Cells are the basic structural and functional units of living things."},
+      {"q":"What is the SI unit of force?","options":["Newton","Joule","Watt","Litre"],"ans":"Newton","category":"Physics","difficulty":"Easy","explanation":"Force is measured in newtons, named after physicist Isaac Newton."},
+      {"q":"What motion of Earth causes the cycle of day and night?","options":["Earth rotating on its axis","Earth orbiting the Sun once","The Moon orbiting Earth","The Sun orbiting Earth"],"ans":"Earth rotating on its axis","category":"Earth Science","difficulty":"Easy","explanation":"As Earth rotates, different regions face toward or away from the Sun."},
+      {"q":"What is the chemical formula for water?","options":["H₂O","CO₂","O₂","NaCl"],"ans":"H₂O","category":"Chemistry","difficulty":"Easy","explanation":"A water molecule contains two hydrogen atoms and one oxygen atom."},
+      {"q":"Which organ pumps blood around the human body?","options":["Heart","Lung","Stomach","Kidney"],"ans":"Heart","category":"Biology","difficulty":"Easy","explanation":"The heart contracts to move blood through the circulatory system."},
+      {"q":"Which state of matter has a fixed shape and a fixed volume?","options":["Solid","Liquid","Gas","Plasma only"],"ans":"Solid","category":"Chemistry","difficulty":"Easy","explanation":"A solid keeps its shape and volume; a liquid keeps volume but takes the container's shape."},
+      {"q":"Why can sound not travel through a vacuum?","options":["Sound needs particles to carry vibrations","A vacuum is too bright","Sound only travels through water","Gravity blocks every sound wave"],"ans":"Sound needs particles to carry vibrations","category":"Physics","difficulty":"Medium","explanation":"Sound is a mechanical wave and needs a medium with particles to pass on its vibrations."}
+    ]
+  },
+  {
+    "id": "builtin-digital-citizenship",
+    "title": "Digital Citizenship & Cyber Safety",
+    "description": "Make thoughtful choices about passwords, messages, privacy, updates, and online conduct.",
+    "duration_minutes": 10,
+    "shuffle": true,
+    "published": true,
+    "questions": [
+      {"q":"Which password practice is safest?","options":["Use a long, unique password for each important account","Reuse one short password everywhere","Use your birthday as every password","Share your password with classmates"],"ans":"Use a long, unique password for each important account","category":"Cyber Safety","difficulty":"Easy","explanation":"Unique passwords limit the damage if one service is compromised. A password manager can help keep track of them."},
+      {"q":"What does multi-factor authentication add to a sign-in?","options":["Another proof of identity besides the password","A public profile picture","A faster internet connection","A second username"],"ans":"Another proof of identity besides the password","category":"Cyber Safety","difficulty":"Easy","explanation":"Multi-factor authentication asks for an additional factor, such as an authenticator code or security key."},
+      {"q":"A message says your account will close unless you open an unfamiliar link immediately. What is the safest first response?","options":["Do not open the link; verify the message through the service's official app or website","Reply with your password","Forward it to everyone","Download the attachment to check it"],"ans":"Do not open the link; verify the message through the service's official app or website","category":"Online Safety","difficulty":"Easy","explanation":"Urgent threats and unfamiliar links are common phishing signals. Verify using a known official channel."},
+      {"q":"What is a sensible way to handle a software security update?","options":["Install it from the device or software's official update feature","Ignore it forever","Download a copy from a random message","Share the update file with strangers"],"ans":"Install it from the device or software's official update feature","category":"Cyber Safety","difficulty":"Easy","explanation":"Updates from official channels often fix security problems. Avoid installers from unknown sources."},
+      {"q":"Before posting a photo of a friend online, what should you do?","options":["Ask for their permission","Add their home address","Post it publicly by default","Tag their school and daily schedule"],"ans":"Ask for their permission","category":"Digital Citizenship","difficulty":"Easy","explanation":"Respect others' privacy and ask before sharing identifiable photos or personal information."},
+      {"q":"Which statement about a padlock icon or HTTPS is accurate?","options":["It indicates an encrypted connection, but does not prove the site is trustworthy","It proves every claim on the site is true","It guarantees a site has no malware","It means the site cannot collect data"],"ans":"It indicates an encrypted connection, but does not prove the site is trustworthy","category":"Online Safety","difficulty":"Medium","explanation":"HTTPS protects data in transit; you still need to check that the site and request are legitimate."},
+      {"q":"If someone is being bullied online, which is a constructive action?","options":["Save evidence and report it to a trusted adult or the platform","Join in to get attention","Share the messages widely","Post their private information"],"ans":"Save evidence and report it to a trusted adult or the platform","category":"Digital Citizenship","difficulty":"Easy","explanation":"Keep evidence, use reporting tools, and seek help from a trusted adult. Avoid escalating or sharing private details."},
+      {"q":"Why should important files have a backup?","options":["A backup helps restore files after loss, damage, or device failure","It makes every password stronger","It prevents all phishing","It automatically checks every fact online"],"ans":"A backup helps restore files after loss, damage, or device failure","category":"Cyber Safety","difficulty":"Easy","explanation":"Backups provide another copy so data can be restored after accidental deletion, hardware failure, or other loss."}
+    ]
+  }
+]
