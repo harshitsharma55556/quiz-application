@@ -1,9 +1,12 @@
 import csv
-import io
+import hashlib
+import hmac
 import html
+import io
 import json
-import os
 import random
+import re
+import secrets
 import time
 import uuid
 from datetime import datetime
@@ -12,71 +15,50 @@ from pathlib import Path
 import streamlit as st
 
 BASE_DIR = Path(__file__).resolve().parent
-DATA_FILE = BASE_DIR / "quiz_data.json"
+LEGACY_FILE = BASE_DIR / "quiz_data.json"
+QUIZZES_FILE = BASE_DIR / "quizzes.json"
+ACCOUNTS_FILE = BASE_DIR / "accounts.json"
 RESULTS_FILE = BASE_DIR / "quiz_results.json"
+PASSWORD_ROUNDS = 310_000
 DEFAULT_QUESTIONS = [
     {"q": "What is the output of print(2 ** 3) in Python?", "options": ["6", "8", "9", "12"], "ans": "8", "category": "Python", "difficulty": "Easy", "explanation": "The ** operator raises a number to a power: 2 × 2 × 2 = 8."},
     {"q": "Which SQL command is used to extract data from a database?", "options": ["EXTRACT", "SELECT", "GET", "OPEN"], "ans": "SELECT", "category": "Databases", "difficulty": "Easy", "explanation": "SELECT reads rows from one or more database tables."},
     {"q": "What does 'VLOOKUP' stand for in Excel?", "options": ["Vertical Lookup", "Value Lookup", "Variable Lookup", "View Lookup"], "ans": "Vertical Lookup", "category": "Excel", "difficulty": "Easy", "explanation": "VLOOKUP searches vertically in the first column of a range."},
 ]
 
-st.set_page_config(page_title="Quizly · Learn with confidence", page_icon="✦", layout="wide", initial_sidebar_state="expanded")
-
+st.set_page_config(page_title="Quizly | Classroom", page_icon="✦", layout="wide", initial_sidebar_state="expanded")
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap');
-:root { --ink:#f2f4ff; --muted:#a0a6c2; --panel:#171a2b; --panel2:#20243a; --line:rgba(255,255,255,.09); --violet:#a78bfa; --mint:#73e2c1; }
-.stApp { background: radial-gradient(ellipse at 80% -5%, rgba(116,82,210,.23), transparent 35%), #0e1020; color:var(--ink); font-family:'DM Sans',sans-serif; }
+:root { --ink:#20223a; --muted:#70738a; --line:#e9e9f1; --violet:#6753d8; --paper:#f6f6fb; }
+.stApp { background:radial-gradient(ellipse at 78% -8%,rgba(133,112,236,.15),transparent 34%),var(--paper); color:var(--ink); font-family:'DM Sans',sans-serif; }
 [data-testid="stHeader"] { background:transparent; }
-[data-testid="stSidebar"] { background:#121426; border-right:1px solid var(--line); }
+[data-testid="stSidebar"] { background:#fff; border-right:1px solid var(--line); }
 [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p { color:var(--muted); }
-h1,h2,h3 { font-family:'Manrope','DM Sans',sans-serif !important; letter-spacing:-.04em; }
-h1 { font-size:2.5rem !important; }
-.hero { padding:2rem 2.2rem; border:1px solid var(--line); border-radius:24px; background:linear-gradient(120deg,rgba(116,82,210,.24),rgba(33,38,63,.84)); margin-bottom:1.4rem; }
-.hero-kicker { color:var(--mint); font-size:.78rem; font-weight:800; letter-spacing:.13em; text-transform:uppercase; }
-.hero h1 { margin:.55rem 0 .4rem; }
-.hero p { color:#c3c7df; margin:0; font-size:1.04rem; }
-.card { background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:1.35rem; }
-.question-card { background:linear-gradient(145deg,#1b1e32,#151728); border:1px solid var(--line); border-radius:24px; padding:1.7rem; margin:.8rem 0 1rem; }
-.eyebrow { color:var(--violet); font-size:.78rem; text-transform:uppercase; letter-spacing:.11em; font-weight:800; }
-.pill { display:inline-block; background:#27253d; color:#d7caff; border:1px solid #514477; padding:.22rem .65rem; border-radius:999px; font-size:.77rem; margin-right:.35rem; }
+h1,h2,h3,h4 { font-family:'Manrope','DM Sans',sans-serif !important; letter-spacing:-.04em; color:var(--ink); }
+h1 { font-size:2.5rem !important; font-weight:800 !important; }
+.hero { padding:2rem 2.2rem; border:1px solid #e7e3fa; border-radius:26px; background:linear-gradient(118deg,#fff 12%,#f0edff); margin-bottom:1.5rem; box-shadow:0 12px 35px #382d780e; }
+.hero-kicker,.eyebrow { color:var(--violet); font-size:.76rem; font-weight:800; letter-spacing:.13em; text-transform:uppercase; }
+.hero h1 { margin:.55rem 0 .4rem; }.hero p { color:#686b82; margin:0; font-size:1.05rem; }
+.brand-mark { display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:13px; background:linear-gradient(140deg,#8975f0,#5c48c8); color:white; font-size:1.2rem; }
+.quiz-card { min-height:165px; padding:1.4rem; background:#fff; border:1px solid var(--line); border-radius:21px; box-shadow:0 10px 26px #2826460b; }
+.question-card { background:linear-gradient(145deg,#fff,#f4f2ff); border:1px solid #e8e3fb; border-radius:24px; padding:1.7rem; margin:.8rem 0 1rem; box-shadow:0 12px 26px #332c670f; }
+.pill { display:inline-block; background:#f0edff; color:#5848b2; border:1px solid #e3ddff; padding:.25rem .7rem; border-radius:999px; font-size:.77rem; margin-right:.35rem; font-weight:700; }
 div.stButton > button,div.stDownloadButton > button { border-radius:12px; border:1px solid var(--line); font-weight:700; min-height:2.7rem; }
-div.stButton > button[kind="primary"] { background:linear-gradient(100deg,#8b68e8,#6f5bd3); border:0; }
-[data-testid="stMetric"] { background:var(--panel); border:1px solid var(--line); padding:1rem 1.15rem; border-radius:16px; }
-[data-testid="stMetricValue"] { color:var(--mint); }
-[data-testid="stProgressBar"] > div > div { background:linear-gradient(90deg,#8e6ae9,#73e2c1); }
-hr { border-color:var(--line); }
-.small-muted { color:var(--muted); font-size:.9rem; }
+div.stButton > button[kind="primary"] { background:linear-gradient(100deg,#7762e4,#5c49c8); border:0; color:white; }
+[data-testid="stMetric"] { background:#fff; border:1px solid var(--line); padding:1rem 1.1rem; border-radius:17px; box-shadow:0 7px 18px #28264609; }
+[data-testid="stMetricValue"] { color:var(--violet); font-family:'Manrope',sans-serif; font-weight:800; }
+[data-testid="stProgressBar"] > div > div { background:linear-gradient(90deg,#8e7af0,#54cda7); }
+[data-testid="stTextInput"] input,[data-testid="stTextArea"] textarea { border-radius:11px; }
+hr { border-color:var(--line); }.small-muted { color:var(--muted); font-size:.9rem; }
 </style>
 """, unsafe_allow_html=True)
 
 
-def normalize_question(item):
-    if not isinstance(item, dict):
-        return None
-    question = str(item.get("q", "")).strip()
-    options = list(dict.fromkeys(str(o).strip() for o in item.get("options", []) if str(o).strip()))
-    answer = str(item.get("ans", "")).strip()
-    if not question or len(options) < 2 or answer not in options:
-        return None
-    try:
-        points = max(1, min(10, int(item.get("points", 1))))
-    except (TypeError, ValueError):
-        points = 1
-    return {
-        "id": str(item.get("id") or uuid.uuid4()), "q": question, "options": options,
-        "ans": answer, "category": str(item.get("category", "General")).strip() or "General",
-        "difficulty": str(item.get("difficulty", "Medium")),
-        "explanation": str(item.get("explanation", "")).strip(),
-        "points": points,
-    }
-
-
 def load_json(path, fallback):
     try:
-        with path.open("r", encoding="utf-8") as source:
-            data = json.load(source)
-        return data if isinstance(data, list) else fallback
+        with path.open("r", encoding="utf-8-sig") as source:
+            return json.load(source)
     except (OSError, json.JSONDecodeError):
         return fallback
 
@@ -87,46 +69,196 @@ def save_json(path, data):
     temp.replace(path)
 
 
-def load_questions():
-    raw = load_json(DATA_FILE, DEFAULT_QUESTIONS)
-    questions = [q for q in (normalize_question(x) for x in raw) if q]
-    return questions or [normalize_question(q) for q in DEFAULT_QUESTIONS]
+def normalize_question(item):
+    if not isinstance(item, dict):
+        return None
+    prompt = str(item.get("q", "")).strip()
+    options = list(dict.fromkeys(str(x).strip() for x in item.get("options", []) if str(x).strip()))
+    answer = str(item.get("ans", "")).strip()
+    if not prompt or len(options) < 2 or answer not in options:
+        return None
+    try:
+        points = max(1, min(10, int(item.get("points", 1))))
+    except (TypeError, ValueError):
+        points = 1
+    return {"id": str(item.get("id") or uuid.uuid4()), "q": prompt, "options": options, "ans": answer,
+            "category": str(item.get("category", "General")).strip() or "General",
+            "difficulty": str(item.get("difficulty", "Medium")),
+            "explanation": str(item.get("explanation", "")).strip(), "points": points}
 
 
-def load_results():
-    return load_json(RESULTS_FILE, [])
-
-
-def save_questions():
-    save_json(DATA_FILE, st.session_state.questions)
-
-
-def reset_attempt():
-    for key in ("attempt", "answers", "marked", "submitted", "review", "attempt_started", "attempt_deadline", "final_result"):
-        st.session_state.pop(key, None)
+def load_quizzes():
+    stored = load_json(QUIZZES_FILE, None)
+    if isinstance(stored, list):
+        return stored
+    legacy = load_json(LEGACY_FILE, DEFAULT_QUESTIONS)
+    source = legacy if isinstance(legacy, list) else DEFAULT_QUESTIONS
+    questions = [x for x in (normalize_question(q) for q in source) if x]
+    if not questions:
+        questions = [normalize_question(q) for q in DEFAULT_QUESTIONS]
+    quizzes = [{"id": str(uuid.uuid4()), "title": "Starter Quiz",
+                "description": "A short warm-up across Python, databases, and Excel.",
+                "duration_minutes": 5, "shuffle": True, "published": True,
+                "questions": questions}]
+    save_json(QUIZZES_FILE, quizzes)
+    return quizzes
 
 
 def init_state():
-    if "questions" not in st.session_state:
-        st.session_state.questions = load_questions()
+    if "quizzes" not in st.session_state:
+        st.session_state.quizzes = load_quizzes()
+    if "accounts" not in st.session_state:
+        data = load_json(ACCOUNTS_FILE, [])
+        st.session_state.accounts = data if isinstance(data, list) else []
     if "results" not in st.session_state:
-        st.session_state.results = load_results()
-    if "page" not in st.session_state:
-        st.session_state.page = "Take a quiz"
+        data = load_json(RESULTS_FILE, [])
+        st.session_state.results = data if isinstance(data, list) else []
+    if "user" not in st.session_state:
+        st.session_state.user = None
 
 
-def start_attempt(name, selected, minutes, shuffle):
-    questions = list(selected)
-    if shuffle:
+def save_quizzes():
+    save_json(QUIZZES_FILE, st.session_state.quizzes)
+
+
+def save_accounts():
+    save_json(ACCOUNTS_FILE, st.session_state.accounts)
+
+
+def save_results():
+    save_json(RESULTS_FILE, st.session_state.results[:1000])
+
+
+def password_hash(password, salt):
+    return hashlib.pbkdf2_hmac("sha256", password.encode(), bytes.fromhex(salt), PASSWORD_ROUNDS).hex()
+
+
+def create_account(username, password, role):
+    salt = secrets.token_hex(16)
+    return {"username": username, "username_key": username.casefold(), "role": role,
+            "salt": salt, "password_hash": password_hash(password, salt)}
+
+
+def verify_account(username, password):
+    key = username.strip().casefold()
+    account = next((a for a in st.session_state.accounts if a.get("username_key") == key), None)
+    if not account:
+        return None
+    return account if hmac.compare_digest(password_hash(password, account["salt"]), account["password_hash"]) else None
+
+
+def validate_account(username, password, confirm):
+    username = username.strip()
+    if not re.fullmatch(r"[A-Za-z0-9_.-]{3,24}", username):
+        return "Use a username with 3–24 letters, numbers, dots, dashes, or underscores."
+    if len(password) < 8:
+        return "Choose a password with at least 8 characters."
+    if password != confirm:
+        return "The passwords don’t match."
+    return ""
+
+
+def reset_attempt():
+    for key in ("attempt", "answers", "marked", "submitted", "review", "attempt_started", "attempt_deadline", "final_result", "question_index"):
+        st.session_state.pop(key, None)
+
+
+def hero(kicker, title, subtitle):
+    st.markdown(f'<section class="hero"><div class="hero-kicker">{html.escape(kicker)}</div><h1>{html.escape(title)}</h1><p>{html.escape(subtitle)}</p></section>', unsafe_allow_html=True)
+
+
+def render_auth():
+    left, right = st.columns([1, 1], gap="large")
+    with left:
+        st.markdown('<div class="brand-mark">✦</div><div class="hero-kicker" style="margin-top:1.3rem">YOUR CLASSROOM, IN FOCUS</div><h1 style="font-family:Manrope,sans-serif;line-height:1.08">Small quizzes.<br>Big progress.</h1><p style="font-size:1.08rem;color:#70738a">Sign in to find your next quiz, or open the teacher studio to build one.</p>', unsafe_allow_html=True)
+        published = sum(bool(q.get("published")) for q in st.session_state.quizzes)
+        st.markdown(f"**{published}** quizzes ready for students")
+    with right:
+        student_tab, admin_tab = st.tabs(["Student", "Admin / teacher"])
+        with student_tab:
+            login_tab, signup_tab = st.tabs(["Sign in", "Create student account"])
+            with login_tab:
+                with st.form("student_login"):
+                    username = st.text_input("Username", key="s_login_user")
+                    password = st.text_input("Password", type="password", key="s_login_pass")
+                    submit = st.form_submit_button("Sign in as student", type="primary", use_container_width=True)
+                if submit:
+                    account = verify_account(username, password)
+                    if account and account["role"] == "student":
+                        st.session_state.user = account
+                        st.session_state.page = "Available quizzes"
+                        st.rerun()
+                    st.error("We couldn’t sign you in as a student. Check your details or create an account.")
+            with signup_tab:
+                with st.form("student_signup"):
+                    username = st.text_input("Choose a username", key="s_signup_user", help="3–24 letters, numbers, dots, dashes, or underscores")
+                    password = st.text_input("Create a password", type="password", key="s_signup_pass", help="At least 8 characters")
+                    confirm = st.text_input("Confirm password", type="password", key="s_signup_confirm")
+                    submit = st.form_submit_button("Create student account", type="primary", use_container_width=True)
+                if submit:
+                    error = validate_account(username, password, confirm)
+                    if error:
+                        st.error(error)
+                    elif any(a.get("username_key") == username.strip().casefold() for a in st.session_state.accounts):
+                        st.error("That username is already taken.")
+                    else:
+                        st.session_state.accounts.append(create_account(username.strip(), password, "student"))
+                        save_accounts()
+                        st.success("Account created. Sign in to continue.")
+        with admin_tab:
+            first_admin = not any(a.get("role") == "admin" for a in st.session_state.accounts)
+            if first_admin:
+                st.info("First-time setup: create the teacher account for this app. This setup closes after the first admin is created.")
+                with st.form("admin_setup"):
+                    username = st.text_input("Teacher username", key="a_setup_user")
+                    password = st.text_input("Create teacher password", type="password", key="a_setup_pass")
+                    confirm = st.text_input("Confirm password", type="password", key="a_setup_confirm")
+                    submit = st.form_submit_button("Create teacher account", type="primary", use_container_width=True)
+                if submit:
+                    error = validate_account(username, password, confirm)
+                    if error:
+                        st.error(error)
+                    elif any(a.get("username_key") == username.strip().casefold() for a in st.session_state.accounts):
+                        st.error("That username is already taken.")
+                    else:
+                        st.session_state.accounts.append(create_account(username.strip(), password, "admin"))
+                        save_accounts()
+                        st.success("Teacher account created. Sign in below.")
+                        st.rerun()
+            else:
+                with st.form("admin_login"):
+                    username = st.text_input("Teacher username", key="a_login_user")
+                    password = st.text_input("Password", type="password", key="a_login_pass")
+                    submit = st.form_submit_button("Sign in to teacher studio", type="primary", use_container_width=True)
+                if submit:
+                    account = verify_account(username, password)
+                    if account and account["role"] == "admin":
+                        st.session_state.user = account
+                        st.session_state.page = "Quiz studio"
+                        st.rerun()
+                    st.error("We couldn’t sign you in as an admin. Check your teacher account details.")
+
+
+def logout():
+    reset_attempt()
+    st.session_state.user = None
+    st.rerun()
+
+
+def start_attempt(quiz):
+    questions = list(quiz.get("questions", []))
+    if quiz.get("shuffle", True):
         random.shuffle(questions)
     st.session_state.attempt = questions
+    st.session_state.attempt_quiz_id = quiz["id"]
+    st.session_state.attempt_quiz_title = quiz["title"]
     st.session_state.answers = {}
     st.session_state.marked = set()
     st.session_state.submitted = False
     st.session_state.review = False
     st.session_state.attempt_started = time.time()
+    minutes = int(quiz.get("duration_minutes", 0))
     st.session_state.attempt_deadline = time.time() + minutes * 60 if minutes else None
-    st.session_state.student_name = name.strip()
     st.session_state.final_result = None
     st.session_state.question_index = 0
 
@@ -134,311 +266,278 @@ def start_attempt(name, selected, minutes, shuffle):
 def finish_attempt(auto=False):
     if st.session_state.submitted:
         return
-    questions = st.session_state.attempt
-    answers = st.session_state.answers
+    questions, answers = st.session_state.attempt, st.session_state.answers
     earned = sum(q["points"] for q in questions if answers.get(q["id"]) == q["ans"])
     possible = sum(q["points"] for q in questions)
     elapsed = max(0, int(time.time() - st.session_state.attempt_started))
+    user = st.session_state.user
     result = {
-        "id": str(uuid.uuid4()), "name": st.session_state.student_name,
-        "date": datetime.now().astimezone().isoformat(timespec="minutes"),
-        "score": earned, "total": possible, "percentage": round(100 * earned / possible) if possible else 0,
+        "id": str(uuid.uuid4()), "name": user["username"], "username_key": user["username_key"],
+        "quiz_id": st.session_state.attempt_quiz_id, "quiz_title": st.session_state.attempt_quiz_title,
+        "date": datetime.now().astimezone().isoformat(timespec="minutes"), "score": earned, "total": possible,
+        "percentage": round(100 * earned / possible) if possible else 0,
         "correct": sum(answers.get(q["id"]) == q["ans"] for q in questions),
-        "answered": sum(q["id"] in answers for q in questions),
-        "questions": len(questions), "seconds": elapsed, "timed_out": auto,
+        "answered": sum(q["id"] in answers for q in questions), "questions": len(questions),
+        "seconds": elapsed, "timed_out": auto,
         "details": [{"q": q["q"], "answer": answers.get(q["id"]), "correct_answer": q["ans"], "is_correct": answers.get(q["id"]) == q["ans"], "explanation": q["explanation"]} for q in questions],
     }
     st.session_state.results.insert(0, result)
-    save_json(RESULTS_FILE, st.session_state.results[:500])
+    save_results()
     st.session_state.final_result = result
     st.session_state.submitted = True
 
 
-def hero(kicker, title, subtitle):
-    st.markdown(f'<section class="hero"><div class="hero-kicker">{kicker}</div><h1>{title}</h1><p>{subtitle}</p></section>', unsafe_allow_html=True)
-
-
-def render_setup():
-    hero("YOUR NEXT WIN STARTS HERE", "Ready when you are.", "Pick a topic, set your pace, and show what you know.")
-    questions = st.session_state.questions
-    if not questions:
-        st.info("The question bank is empty. Ask your teacher to add questions.")
+def render_student_home():
+    user = st.session_state.user
+    quizzes = [q for q in st.session_state.quizzes if q.get("published") and q.get("questions")]
+    hero("STUDENT SPACE", f"Welcome, {user['username']}.", "Choose a quiz your teacher has made available.")
+    if not quizzes:
+        st.info("There aren’t any published quizzes yet. Check back after your teacher publishes one.")
         return
-    categories = sorted({q["category"] for q in questions})
-    with st.form("quiz_setup"):
-        st.subheader("Build your session")
-        c1, c2, c3 = st.columns([1.5, 1, 1])
-        with c1:
-            name = st.text_input("Your name", placeholder="e.g. Alex Morgan")
-            category = st.selectbox("Topic", ["All topics"] + categories)
-        with c2:
-            difficulty = st.selectbox("Difficulty", ["Any difficulty", "Easy", "Medium", "Hard"])
-            count = st.selectbox("Questions", ["All available", 5, 10, 15, 20])
-        with c3:
-            duration = st.selectbox("Time limit", [0, 5, 10, 15, 20, 30], format_func=lambda x: "No limit" if x == 0 else f"{x} minutes")
-            shuffle = st.toggle("Shuffle questions", value=True)
-        start = st.form_submit_button("Start quiz  →", type="primary", use_container_width=True)
-    if start:
-        pool = [q for q in questions if (category == "All topics" or q["category"] == category) and (difficulty == "Any difficulty" or q["difficulty"] == difficulty)]
-        if not name.strip():
-            st.error("Enter your name to begin.")
-        elif not pool:
-            st.warning("No questions match those filters. Try a different topic or difficulty.")
-        else:
-            if shuffle:
-                random.shuffle(pool)
-            if count != "All available":
-                pool = pool[:int(count)]
-            start_attempt(name, pool, duration, False)
-            st.rerun()
-    st.markdown("#### In this question bank")
-    a, b, c = st.columns(3)
-    a.metric("Questions", len(questions))
-    b.metric("Topics", len(categories))
-    c.metric("Your past attempts", len([r for r in st.session_state.results if r.get("name", "").casefold() == st.session_state.get("student_name", "").casefold()]))
+    st.markdown("### Available quizzes")
+    columns = st.columns(2, gap="medium")
+    for i, quiz in enumerate(quizzes):
+        with columns[i % 2]:
+            st.markdown(f"<div class='quiz-card'><div class='eyebrow'>READY TO PLAY</div><h3>{html.escape(quiz['title'])}</h3><p style='color:#70738a'>{html.escape(quiz.get('description',''))}</p><span class='pill'>{len(quiz['questions'])} questions</span><span class='pill'>{int(quiz.get('duration_minutes',0))} min</span></div>", unsafe_allow_html=True)
+            if st.button(f"Start {quiz['title']}", key=f"start_{quiz['id']}", type="primary", use_container_width=True):
+                start_attempt(quiz)
+                st.rerun()
+    mine = [r for r in st.session_state.results if r.get("username_key") == user["username_key"]]
+    if mine:
+        st.markdown("### Your recent scores")
+        for result in mine[:3]:
+            st.caption(f"{result.get('quiz_title','Quiz')} · {result.get('percentage',0)}% · {result.get('date','')}")
 
 
 @st.fragment(run_every="1s")
 def render_active_quiz():
     questions = st.session_state.attempt
-    index = st.session_state.get("question_index", 0)
-    if st.session_state.attempt_deadline:
-        remaining = int(st.session_state.attempt_deadline - time.time())
+    if not questions:
+        st.warning("This quiz has no questions. Please ask your teacher to update it.")
+        return
+    index = st.session_state.question_index
+    deadline = st.session_state.attempt_deadline
+    if deadline:
+        remaining = int(deadline - time.time())
         if remaining <= 0:
             finish_attempt(auto=True)
             st.rerun()
-        mins, secs = divmod(remaining, 60)
+        minutes, seconds = divmod(remaining, 60)
     else:
-        elapsed = int(time.time() - st.session_state.attempt_started)
-        mins, secs = divmod(elapsed, 60)
-    answered_count = sum(q["id"] in st.session_state.answers for q in questions)
+        minutes, seconds = divmod(int(time.time() - st.session_state.attempt_started), 60)
+    answered = sum(q["id"] in st.session_state.answers for q in questions)
     top = st.columns([2, 1, 1])
-    with top[0]:
-        st.markdown(f"**{st.session_state.student_name}** <span class='small-muted'>· {answered_count}/{len(questions)} answered</span>", unsafe_allow_html=True)
-    with top[1]:
-        st.metric("Time left" if st.session_state.attempt_deadline else "Elapsed", f"{mins:02d}:{secs:02d}")
-    with top[2]:
-        st.metric("Marked", len(st.session_state.marked))
-    st.progress(answered_count / len(questions), text=f"{answered_count} of {len(questions)} answered")
-    q = questions[index]
-    st.markdown(f"<div class='question-card'><div class='eyebrow'>QUESTION {index+1:02d} / {len(questions):02d}</div><h2>{html.escape(q['q'])}</h2><span class='pill'>{html.escape(q['category'])}</span><span class='pill'>{html.escape(q['difficulty'])}</span><span class='pill'>{q['points']} point{'s' if q['points'] != 1 else ''}</span></div>", unsafe_allow_html=True)
-    current = st.session_state.answers.get(q["id"])
-    chosen = st.radio("Choose one answer", q["options"], index=q["options"].index(current) if current in q["options"] else None, key=f"answer_{q['id']}", label_visibility="collapsed")
-    st.session_state.answers[q["id"]] = chosen if chosen else st.session_state.answers.get(q["id"])
+    top[0].markdown(f"**{html.escape(st.session_state.user['username'])}** <span class='small-muted'>· {answered}/{len(questions)} answered</span>", unsafe_allow_html=True)
+    top[1].metric("Time left" if deadline else "Elapsed", f"{minutes:02d}:{seconds:02d}")
+    top[2].metric("Marked", len(st.session_state.marked))
+    st.progress(answered / len(questions), text=f"{answered} of {len(questions)} answered")
+    question = questions[index]
+    st.markdown(f"<div class='question-card'><div class='eyebrow'>{html.escape(st.session_state.attempt_quiz_title)} · QUESTION {index+1:02d}/{len(questions):02d}</div><h2>{html.escape(question['q'])}</h2><span class='pill'>{html.escape(question['category'])}</span><span class='pill'>{html.escape(question['difficulty'])}</span><span class='pill'>{question['points']} point(s)</span></div>", unsafe_allow_html=True)
+    current = st.session_state.answers.get(question["id"])
+    choice = st.radio("Choose one answer", question["options"], index=question["options"].index(current) if current in question["options"] else None, key=f"answer_{question['id']}", label_visibility="collapsed")
+    st.session_state.answers[question["id"]] = choice if choice else st.session_state.answers.get(question["id"])
     nav = st.columns([1, 1, 2, 1, 1])
-    with nav[0]:
-        if st.button("← Previous", disabled=index == 0, use_container_width=True):
-            st.session_state.question_index -= 1
-            st.rerun()
-    with nav[1]:
-        mark_label = "★ Marked" if q["id"] in st.session_state.marked else "☆ Mark for review"
-        if st.button(mark_label, use_container_width=True):
-            if q["id"] in st.session_state.marked:
-                st.session_state.marked.remove(q["id"])
-            else:
-                st.session_state.marked.add(q["id"])
-            st.rerun()
-    with nav[3]:
-        if st.button("Next →", disabled=index == len(questions)-1, type="primary", use_container_width=True):
-            st.session_state.question_index += 1
-            st.rerun()
-    with nav[4]:
-        if st.button("Finish quiz", use_container_width=True):
-            st.session_state.review = True
-            st.rerun()
+    if nav[0].button("← Previous", disabled=index == 0, use_container_width=True):
+        st.session_state.question_index -= 1
+        st.rerun()
+    marked = st.session_state.marked
+    label = "★ Marked" if question["id"] in marked else "☆ Mark for review"
+    if nav[1].button(label, use_container_width=True):
+        marked.remove(question["id"]) if question["id"] in marked else marked.add(question["id"])
+        st.rerun()
+    if nav[3].button("Next →", disabled=index == len(questions)-1, type="primary", use_container_width=True):
+        st.session_state.question_index += 1
+        st.rerun()
+    if nav[4].button("Finish quiz", use_container_width=True):
+        st.session_state.review = True
+        st.rerun()
     with st.expander("Jump to a question"):
         cols = st.columns(min(10, len(questions)))
         for i, item in enumerate(questions):
             with cols[i % len(cols)]:
-                label = ("★ " if item["id"] in st.session_state.marked else "") + str(i+1)
+                label = ("★ " if item["id"] in marked else "") + str(i+1)
                 if st.button(label, key=f"jump_{i}", type="primary" if i == index else "secondary", use_container_width=True):
                     st.session_state.question_index = i
                     st.rerun()
     if st.session_state.review:
-        unanswered = len(questions) - answered_count
-        st.warning(f"You have {unanswered} unanswered question(s) and {len(st.session_state.marked)} marked for review.")
-        c1, c2 = st.columns(2)
-        with c1:
-            if st.button("Back to quiz", use_container_width=True):
-                st.session_state.review = False
-                st.rerun()
-        with c2:
-            if st.button("Submit my answers", type="primary", use_container_width=True):
-                finish_attempt()
-                st.rerun()
+        st.warning(f"{len(questions)-answered} unanswered · {len(marked)} marked for review")
+        left, right = st.columns(2)
+        if left.button("Back to quiz", use_container_width=True):
+            st.session_state.review = False
+            st.rerun()
+        if right.button("Submit my answers", type="primary", use_container_width=True):
+            finish_attempt()
+            st.rerun()
 
 
 def render_results():
     result = st.session_state.final_result
-    if not result:
-        render_setup()
-        return
     pct = result["percentage"]
-    message, emoji = ("Outstanding work!", "🏆") if pct >= 90 else ("Great progress!", "✨") if pct >= 70 else ("Keep going — practice builds confidence.", "🌱")
-    hero(f"{emoji}  {message.upper()}", f"{pct}% — quiz complete", f"Nice work, {result['name']}. Here’s how you did.")
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Points", f"{result['score']} / {result['total']}")
-    c2.metric("Correct", result["correct"])
-    c3.metric("Answered", f"{result['answered']} / {result['questions']}")
-    c4.metric("Time", f"{result['seconds']//60}m {result['seconds']%60:02d}s")
+    message = "Outstanding work!" if pct >= 90 else "Great progress!" if pct >= 70 else "Keep going — practice builds confidence."
+    hero("QUIZ COMPLETE", f"{pct}% · {message}", f"{result['quiz_title']} · Nice work, {result['name']}.")
+    a, b, c, d = st.columns(4)
+    a.metric("Points", f"{result['score']} / {result['total']}")
+    b.metric("Correct", result["correct"])
+    c.metric("Answered", f"{result['answered']} / {result['questions']}")
+    d.metric("Time", f"{result['seconds']//60}m {result['seconds']%60:02d}s")
     st.progress(pct / 100, text=f"Your score: {pct}%")
-    with st.expander("Review every answer", expanded=True):
+    with st.expander("Review your answers", expanded=True):
         for i, item in enumerate(result["details"], 1):
-            icon = "✅" if item["is_correct"] else "❌"
-            st.markdown(f"**{icon} {i}. {item['q']}**")
+            st.markdown(f"**{'✅' if item['is_correct'] else '❌'} {i}. {item['q']}**")
             st.caption(f"Your answer: {item['answer'] or 'Not answered'} · Correct answer: {item['correct_answer']}")
             if item["explanation"]:
                 st.info(item["explanation"])
     if result["timed_out"]:
         st.warning("Time ran out. Your answers were submitted automatically.")
-    if st.button("Take another quiz", type="primary"):
+    if st.button("Back to available quizzes", type="primary"):
         reset_attempt()
+        st.session_state.page = "Available quizzes"
         st.rerun()
 
 
-def render_quiz():
-    if st.session_state.get("attempt") and not st.session_state.submitted:
+def render_my_results():
+    hero("STUDENT SPACE", "My results", "Your quiz attempts and scores are private to your account.")
+    results = [r for r in st.session_state.results if r.get("username_key") == st.session_state.user["username_key"]]
+    if not results:
+        st.info("Your completed quizzes will appear here.")
+        return
+    for result in results:
+        with st.expander(f"{result.get('quiz_title','Quiz')} · {result.get('percentage',0)}% · {result.get('date','')}"):
+            st.write(f"Score: **{result.get('score',0)} / {result.get('total',0)}** · Correct: **{result.get('correct',0)} / {result.get('questions',0)}**")
+
+
+def render_student():
+    if st.session_state.get("attempt") and not st.session_state.get("submitted"):
         render_active_quiz()
-    elif st.session_state.get("submitted"):
+    elif st.session_state.get("submitted") and st.session_state.get("final_result"):
         render_results()
+    elif st.session_state.page == "My results":
+        render_my_results()
     else:
-        render_setup()
+        render_student_home()
 
 
-def render_question_bank():
-    hero("TEACHER STUDIO", "Question bank", "Create, organize and review the questions in your class quiz.")
-    questions = st.session_state.questions
-    tab_add, tab_manage, tab_import = st.tabs(["＋ Add a question", "☷ Manage bank", "⇧ Import / export"])
-    with tab_add:
-        with st.form("add_question", clear_on_submit=True):
-            prompt = st.text_area("Question", placeholder="Write a clear question…")
-            c1,c2 = st.columns(2)
-            with c1:
-                opts = [st.text_input(f"Option {i+1}", key=f"new_opt_{i}") for i in range(4)]
-                category = st.text_input("Topic", value="General")
-            with c2:
-                correct = st.selectbox("Correct answer", ["Option 1", "Option 2", "Option 3", "Option 4"])
-                difficulty = st.selectbox("Difficulty", ["Easy", "Medium", "Hard"])
-                points = st.number_input("Points", 1, 10, 1)
-            explanation = st.text_area("Explanation (shown after submission)", placeholder="Optional learning note")
-            add = st.form_submit_button("Add to question bank", type="primary")
-        if add:
-            valid_opts = list(dict.fromkeys(o.strip() for o in opts if o.strip()))
-            selected_text = opts[int(correct.split()[-1])-1].strip()
-            if not prompt.strip() or len(valid_opts) < 2 or not selected_text:
-                st.error("Add a question, at least two options, and select a filled correct option.")
+def render_quiz_studio():
+    hero("TEACHER STUDIO", "Build a quiz.", "Create a draft, add questions, then publish it when students are ready.")
+    with st.expander("＋ Create a new quiz", expanded=not bool(st.session_state.quizzes)):
+        with st.form("create_quiz", clear_on_submit=True):
+            title = st.text_input("Quiz title", placeholder="e.g. Introduction to Python")
+            description = st.text_area("Description", placeholder="Tell students what this quiz covers.")
+            a, b = st.columns(2)
+            duration = a.selectbox("Time limit", [0, 5, 10, 15, 20, 30], format_func=lambda n: "No time limit" if n == 0 else f"{n} minutes")
+            shuffle = b.toggle("Shuffle question order", value=True)
+            create = st.form_submit_button("Create quiz draft", type="primary")
+        if create:
+            if not title.strip():
+                st.error("Give your quiz a title first.")
             else:
-                q = normalize_question({"q":prompt,"options":valid_opts,"ans":selected_text,"category":category,"difficulty":difficulty,"points":points,"explanation":explanation})
-                st.session_state.questions.append(q)
-                save_questions()
-                st.success("Question added.")
+                quiz = {"id": str(uuid.uuid4()), "title": title.strip(), "description": description.strip(),
+                        "duration_minutes": duration, "shuffle": shuffle, "published": False,
+                        "questions": [], "created_at": datetime.now().astimezone().isoformat(timespec="minutes")}
+                st.session_state.quizzes.insert(0, quiz)
+                save_quizzes()
+                st.success("Draft created. Add questions below, then publish it.")
                 st.rerun()
-    with tab_manage:
-        query = st.text_input("Search questions", placeholder="Search by question, topic or answer")
-        cats = sorted({q["category"] for q in questions})
-        selected_cat = st.selectbox("Filter topic", ["All topics"] + cats, key="manage_category")
-        visible = [(i,q) for i,q in enumerate(questions) if (not query or query.casefold() in " ".join([q["q"],q["category"],q["ans"]]).casefold()) and (selected_cat == "All topics" or q["category"] == selected_cat)]
-        st.caption(f"Showing {len(visible)} of {len(questions)} questions")
-        for i, q in visible:
-            with st.expander(f"{i+1}. {q['q']} · {q['category']} / {q['difficulty']}"):
-                st.write("Options: " + " · ".join(q["options"]))
-                st.write(f"Correct answer: **{q['ans']}** · {q['points']} point(s)")
-                if q["explanation"]: st.caption(q["explanation"])
-                e1,e2 = st.columns(2)
-                with e1:
-                    if st.button("Edit", key=f"edit_{q['id']}"):
-                        st.session_state.edit_question = q["id"]
-                with e2:
-                    if st.button("Delete", key=f"delete_{q['id']}"):
-                        st.session_state.questions.pop(i)
-                        save_questions()
-                        st.rerun()
-        edit_id = st.session_state.get("edit_question")
-        edit_q = next((q for q in questions if q["id"] == edit_id), None)
-        if edit_q:
-            st.markdown("#### Edit question")
-            with st.form("edit_question_form"):
-                prompt = st.text_area("Question", edit_q["q"])
-                opts = [st.text_input(f"Option {i+1}", value=edit_q["options"][i] if i < len(edit_q["options"]) else "", key=f"editopt{i}") for i in range(4)]
-                answer_idx = edit_q["options"].index(edit_q["ans"])
-                correct = st.selectbox("Correct answer", ["Option 1","Option 2","Option 3","Option 4"], index=answer_idx)
-                category = st.text_input("Topic", edit_q["category"])
-                difficulty = st.selectbox("Difficulty", ["Easy","Medium","Hard"], index=["Easy","Medium","Hard"].index(edit_q["difficulty"]) if edit_q["difficulty"] in ["Easy","Medium","Hard"] else 1)
-                points = st.number_input("Points",1,10,edit_q["points"])
-                explanation = st.text_area("Explanation",edit_q["explanation"])
-                saved = st.form_submit_button("Save changes",type="primary")
-            if saved:
-                valid_opts = list(dict.fromkeys(o.strip() for o in opts if o.strip()))
-                answer = opts[int(correct.split()[-1])-1].strip()
-                updated = normalize_question({**edit_q,"q":prompt,"options":valid_opts,"ans":answer,"category":category,"difficulty":difficulty,"points":points,"explanation":explanation})
-                if updated:
-                    st.session_state.questions[next(i for i,x in enumerate(questions) if x["id"] == edit_id)] = updated
-                    save_questions(); st.session_state.pop("edit_question",None); st.success("Question updated."); st.rerun()
-                else: st.error("Check the question, options and correct answer.")
-    with tab_import:
-        st.markdown("Import questions from JSON using the same `q`, `options`, `ans` fields as the existing file. Optional fields: `category`, `difficulty`, `explanation`, `points`.")
-        upload = st.file_uploader("Choose a JSON question file", type=["json"])
-        mode = st.radio("Import mode", ["Add to current bank", "Replace current bank"], horizontal=True)
-        if upload and st.button("Import questions", type="primary"):
-            try:
-                parsed = json.loads(upload.getvalue().decode("utf-8"))
-                if not isinstance(parsed, list): raise ValueError("The file must contain a JSON list.")
-                imported = [normalize_question(item) for item in parsed]
-                imported = [item for item in imported if item]
-                if not imported: raise ValueError("No valid questions were found. Each needs a prompt, two options and a correct answer.")
-                st.session_state.questions = (questions + imported) if mode.startswith("Add") else imported
-                save_questions(); st.success(f"Imported {len(imported)} question(s)."); st.rerun()
-            except (ValueError, UnicodeDecodeError) as error:
-                st.error(str(error))
-        payload = json.dumps(questions, indent=2, ensure_ascii=False)
-        st.download_button("Download question bank (JSON)", payload, file_name="quiz_questions.json", mime="application/json")
-        if st.button("Restore the original sample questions"):
-            st.session_state.questions = [normalize_question(q) for q in DEFAULT_QUESTIONS]
-            save_questions(); st.success("Sample question bank restored."); st.rerun()
+    if not st.session_state.quizzes:
+        st.info("Your quiz studio is ready. Create a quiz to get started.")
+        return
+    st.markdown("### Your quizzes")
+    for quiz in st.session_state.quizzes:
+        status = "PUBLISHED" if quiz.get("published") else "DRAFT"
+        with st.expander(f"{quiz['title']} · {status} · {len(quiz.get('questions', []))} questions"):
+            st.caption(quiz.get("description") or "No description yet.")
+            c1, c2, c3 = st.columns([1, 1, 2])
+            if c1.button("Unpublish" if quiz.get("published") else "Publish quiz", key=f"pub_{quiz['id']}", type="primary" if not quiz.get("published") else "secondary", disabled=not quiz.get("questions")):
+                quiz["published"] = not quiz.get("published", False)
+                save_quizzes()
+                st.rerun()
+            if c2.button("Delete quiz", key=f"delquiz_{quiz['id']}"):
+                st.session_state.quizzes = [item for item in st.session_state.quizzes if item["id"] != quiz["id"]]
+                save_quizzes()
+                st.rerun()
+            c3.caption(f"{len(quiz.get('questions', []))} questions · {quiz.get('duration_minutes', 0) or 'No'} minute limit")
+            st.markdown("#### Questions")
+            for number, question in enumerate(quiz.get("questions", []), 1):
+                st.markdown(f"**{number}. {question['q']}**")
+                st.caption(f"{question['category']} · {question['difficulty']} · Correct answer: {question['ans']}")
+            st.markdown("#### Add a question")
+            with st.form(f"addq_{quiz['id']}", clear_on_submit=True):
+                prompt = st.text_area("Question", key=f"prompt_{quiz['id']}")
+                left, right = st.columns(2)
+                with left:
+                    options = [st.text_input(f"Option {i+1}", key=f"opt_{quiz['id']}_{i}") for i in range(4)]
+                    category = st.text_input("Topic", value="General", key=f"cat_{quiz['id']}")
+                with right:
+                    correct = st.selectbox("Correct answer", [f"Option {i}" for i in range(1, 5)], key=f"ans_{quiz['id']}")
+                    difficulty = st.selectbox("Difficulty", ["Easy", "Medium", "Hard"], key=f"diff_{quiz['id']}")
+                    points = st.number_input("Points", 1, 10, 1, key=f"points_{quiz['id']}")
+                explanation = st.text_area("Explanation shown after the quiz", key=f"explain_{quiz['id']}")
+                add = st.form_submit_button("Add question", type="primary")
+            if add:
+                valid_options = list(dict.fromkeys(value.strip() for value in options if value.strip()))
+                answer = options[int(correct.split()[-1])-1].strip()
+                item = normalize_question({"q": prompt, "options": valid_options, "ans": answer,
+                                           "category": category, "difficulty": difficulty,
+                                           "points": points, "explanation": explanation})
+                if not item:
+                    st.error("Add a question, at least two options, and a correct option with text.")
+                else:
+                    quiz["questions"].append(item)
+                    save_quizzes()
+                    st.success("Question added to this quiz.")
+                    st.rerun()
 
 
-def render_analytics():
-    hero("TEACHER STUDIO", "Results & insights", "See recent attempts and how the class is progressing.")
+def render_class_results():
+    hero("TEACHER STUDIO", "Class results", "Review quiz attempts and download a report.")
     results = st.session_state.results
     if not results:
-        st.info("Results will appear here after the first quiz attempt.")
+        st.info("Results will appear here after students complete a quiz.")
         return
-    avg = round(sum(r.get("percentage",0) for r in results) / len(results))
-    c1,c2,c3 = st.columns(3)
-    c1.metric("Total attempts",len(results)); c2.metric("Average score",f"{avg}%"); c3.metric("Unique students",len({r.get('name','').casefold() for r in results}))
-    st.subheader("Recent attempts")
-    for r in results[:100]:
-        with st.expander(f"{r.get('name','Student')} · {r.get('percentage',0)}% · {r.get('date','')}"):
-            c1,c2,c3 = st.columns(3)
-            c1.write(f"**Score:** {r.get('score',0)} / {r.get('total',0)}")
-            c2.write(f"**Correct:** {r.get('correct',0)} / {r.get('questions',0)}")
-            c3.write(f"**Time:** {r.get('seconds',0)//60}m {r.get('seconds',0)%60:02d}s")
-    csv_buffer = io.StringIO()
-    if results:
-        writer = csv.DictWriter(csv_buffer, fieldnames=["name","date","percentage","score","total","correct","answered","questions","seconds","timed_out"])
-        writer.writeheader()
-        for r in results: writer.writerow({k:r.get(k) for k in writer.fieldnames})
-    st.download_button("Download results (CSV)",csv_buffer.getvalue(),file_name="quiz_results.csv",mime="text/csv")
-    if st.button("Clear all saved results"):
-        st.session_state.results=[]; save_json(RESULTS_FILE,[]); st.success("Results cleared."); st.rerun()
+    avg = round(sum(r.get("percentage", 0) for r in results) / len(results))
+    a, b, c = st.columns(3)
+    a.metric("Total attempts", len(results))
+    b.metric("Average score", f"{avg}%")
+    c.metric("Students", len({r.get("username_key", r.get("name", "").casefold()) for r in results}))
+    for result in results[:150]:
+        title = result.get("quiz_title", "Quiz")
+        with st.expander(f"{result.get('name','Student')} · {title} · {result.get('percentage',0)}% · {result.get('date','')}"):
+            st.write(f"Score: **{result.get('score',0)} / {result.get('total',0)}** · Correct: **{result.get('correct',0)} / {result.get('questions',0)}** · Time: **{result.get('seconds',0)//60}m {result.get('seconds',0)%60:02d}s**")
+    output = io.StringIO()
+    fields = ["name", "quiz_title", "date", "percentage", "score", "total", "correct", "answered", "questions", "seconds", "timed_out"]
+    writer = csv.DictWriter(output, fieldnames=fields)
+    writer.writeheader()
+    for result in results:
+        writer.writerow({key: result.get(key) for key in fields})
+    st.download_button("Download class results (CSV)", output.getvalue(), file_name="quiz_results.csv", mime="text/csv")
 
 
 def main():
     init_state()
+    user = st.session_state.user
+    if not user:
+        render_auth()
+        return
     with st.sidebar:
-        st.markdown("# ✦ Quizly")
-        st.caption("A calmer way to test what you know.")
+        st.markdown('<div class="brand-mark">✦</div>', unsafe_allow_html=True)
+        st.markdown("# Quizly")
+        st.caption("Classroom quiz studio")
         st.divider()
-        page = st.radio("Navigate", ["Take a quiz", "Question bank", "Results & insights"], label_visibility="collapsed", key="page")
-        st.divider()
-        st.markdown(f"**{len(st.session_state.questions)}** questions · **{len(st.session_state.results)}** attempts")
-        st.caption("Teacher studio tools are available in Question bank and Results.")
-    if page == "Take a quiz": render_quiz()
-    elif page == "Question bank": render_question_bank()
-    else: render_analytics()
+        if user["role"] == "admin":
+            page = st.radio("TEACHER MENU", ["Quiz studio", "Class results"], key="admin_page")
+            st.divider()
+            st.caption(f"Signed in as teacher · {user['username']}")
+        else:
+            page = st.radio("STUDENT MENU", ["Available quizzes", "My results"], key="student_page")
+            st.divider()
+            st.caption(f"Signed in as student · {user['username']}")
+        if st.button("Sign out", use_container_width=True):
+            logout()
+    if user["role"] == "admin":
+        render_quiz_studio() if page == "Quiz studio" else render_class_results()
+    else:
+        render_student()
 
 
 if __name__ == "__main__":
     main()
-
-

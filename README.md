@@ -1,43 +1,36 @@
 # Quizly — classroom quiz app
 
-A polished, responsive Streamlit quiz application for students and teachers. It keeps the original JSON question format while adding optional topic, difficulty, explanation, and point fields.
+A Streamlit classroom quiz app with separate student and teacher accounts. Students can see only quizzes published by a teacher. Teachers create quizzes, add questions, and publish or unpublish them from the studio.
 
-## Run locally
+## Run on Windows
 
-1. Install Python 3.9 or newer.
-2. Install dependencies: `pip install -r requirements.txt`
-3. Start the app: `streamlit run app.py`
+1. Install Python 3.10 or newer and select **Add Python to PATH** during setup.
+2. Open this folder in File Explorer, click the address bar, type `cmd`, and press Enter.
+3. Run:
 
-On Windows, `run.bat` starts the app after dependencies are installed.
+   ```text
+   py -m pip install -r requirements.txt
+   py -m streamlit run app.py
+   ```
 
-## Student features
+You can also double-click `run.bat` after installing Python and the dependencies.
 
-- Choose a topic, difficulty, question count, shuffle mode, and optional timer.
-- Move between questions, jump directly to a question, and mark items for review.
-- Review unanswered questions before submitting.
-- See weighted score, elapsed time, correct answers, explanations, and answer review.
-- Retake a quiz without losing the saved class results.
+## First-time setup
 
-## Teacher features
+- On the sign-in screen, open **Admin / teacher** and create the first teacher account. The setup form closes after the first admin account exists.
+- Students can create their own accounts from **Create student account**.
+- The existing questions in `quiz_data.json` are imported into a published **Starter Quiz** the first time this version runs.
+- In **Quiz studio**, create a draft, add questions, and publish it. Students then see it under **Available quizzes**.
 
-- Add, edit, search, filter, and delete questions.
-- Organize questions by topic and difficulty and assign points.
-- Import or export a JSON question bank.
-- Review recent attempts and download a CSV report.
+## Features
 
-Question banks are stored in `quiz_data.json`; results are stored locally in `quiz_results.json`. Keep these files with `app.py`. This classroom starter stores results on the machine running Streamlit; it does not provide separate teacher login or multi-user cloud storage.
+- Separate student and teacher sign-in. Passwords are stored as salted PBKDF2 hashes.
+- Students see published quizzes and their own attempts.
+- Teachers can create quizzes, add questions, set a timer and shuffle order, then publish or unpublish them.
+- Timed attempts, question navigation, review marks, answer review, explanations, weighted scoring, and score history.
+- Teacher class results with CSV download.
+- Responsive interface using Manrope and DM Sans with system-font fallbacks.
 
-### Question format
+## Local data
 
-```json
-{
-  "q": "What is 2 + 2?",
-  "options": ["3", "4", "5"],
-  "ans": "4",
-  "category": "Math",
-  "difficulty": "Easy",
-  "points": 1,
-  "explanation": "Two plus two equals four."
-}
-```
-The original `q`, `options`, and `ans` fields are still supported. Optional fields receive sensible defaults.
+The app creates `accounts.json`, `quizzes.json`, and `quiz_results.json` beside `app.py`. Keep those files with the app. This is a local classroom/demo app: its JSON files are stored on the machine running Streamlit, not in a shared cloud database. Do not expose it as a public website and treat the local login as classroom-level access, not production-grade security.
