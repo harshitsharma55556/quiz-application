@@ -1,5 +1,6 @@
 import csv
 import io
+import html
 import json
 import os
 import random
@@ -58,12 +59,16 @@ def normalize_question(item):
     answer = str(item.get("ans", "")).strip()
     if not question or len(options) < 2 or answer not in options:
         return None
+    try:
+        points = max(1, min(10, int(item.get("points", 1))))
+    except (TypeError, ValueError):
+        points = 1
     return {
         "id": str(item.get("id") or uuid.uuid4()), "q": question, "options": options,
         "ans": answer, "category": str(item.get("category", "General")).strip() or "General",
         "difficulty": str(item.get("difficulty", "Medium")),
         "explanation": str(item.get("explanation", "")).strip(),
-        "points": max(1, int(item.get("points", 1))),
+        "points": points,
     }
 
 
@@ -215,7 +220,7 @@ def render_setup():
         st.metric("Marked", len(st.session_state.marked))
     st.progress(answered_count / len(questions), text=f"{answered_count} of {len(questions)} answered")
     q = questions[index]
-    st.markdown(f"<div class='question-card'><div class='eyebrow'>QUESTION {index+1:02d} / {len(questions):02d}</div><h2>{q['q']}</h2><span class='pill'>{q['category']}</span><span class='pill'>{q['difficulty']}</span><span class='pill'>{q['points']} point{'s' if q['points'] != 1 else ''}</span></div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='question-card'><div class='eyebrow'>QUESTION {index+1:02d} / {len(questions):02d}</div><h2>{html.escape(q['q'])}</h2><span class='pill'>{html.escape(q['category'])}</span><span class='pill'>{html.escape(q['difficulty'])}</span><span class='pill'>{q['points']} point{'s' if q['points'] != 1 else ''}</span></div>", unsafe_allow_html=True)
     current = st.session_state.answers.get(q["id"])
     chosen = st.radio("Choose one answer", q["options"], index=q["options"].index(current) if current in q["options"] else None, key=f"answer_{q['id']}", label_visibility="collapsed")
     st.session_state.answers[q["id"]] = chosen if chosen else st.session_state.answers.get(q["id"])
