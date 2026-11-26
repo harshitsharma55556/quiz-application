@@ -116,7 +116,7 @@ p,label,[data-testid="stWidgetLabel"] p { font-family:'Source Sans 3','Segoe UI'
 .section-kicker { margin-top:1.5rem; color:#0a9dbb; font:800 .78rem 'Montserrat',sans-serif; letter-spacing:.16em; }
 .portal-title { margin:.3rem 0 .25rem; color:#07113f !important; font:800 2rem 'Montserrat',sans-serif !important; }
 .role-heading { display:flex; align-items:center; gap:.85rem; color:#09143c; font:800 1.3rem 'Montserrat',sans-serif; margin:.2rem 0 .7rem; }
-.role-icon { width:42px; height:42px; display:inline-grid; place-items:center; border-radius:13px; background:linear-gradient(145deg,#e1faff,#f1f0ff); border:1px solid #b9eaf2; color:#087ca7; font:800 1rem 'Montserrat',sans-serif; }
+
 [data-testid="stVerticalBlockBorderWrapper"] { padding:1rem !important; border:1px solid #dbe5f0 !important; border-radius:20px !important; background:linear-gradient(145deg,#fff,#f8fbff) !important; box-shadow:0 14px 32px #07113f12 !important; }
 [data-testid="stForm"] { max-width:760px; margin:1rem auto !important; padding:1.5rem !important; border:1px solid #dbe5f0 !important; border-radius:18px !important; background:#fff !important; box-shadow:0 14px 34px #07113f10 !important; }
 [data-testid="stTextInput"] input,[data-testid="stTextArea"] textarea,[data-baseweb="input"] input,[data-baseweb="textarea"] textarea { background:#fff !important; color:#111b3e !important; font-size:1.08rem !important; border-radius:12px !important; }
@@ -255,14 +255,14 @@ def render_auth():
     student_col, teacher_col = st.columns(2, gap="medium")
     with student_col:
         with st.container(border=True):
-            st.markdown('<div class="role-heading"><span class="role-icon">S</span><span>Student Login</span></div>', unsafe_allow_html=True)
+            st.markdown('<div class="role-heading"><span>Student Login</span></div>', unsafe_allow_html=True)
             st.caption("Take published quizzes and follow your scores.")
             if st.button("Student Login", key="select_student", type="primary" if role == "student" else "secondary", use_container_width=True):
                 st.session_state.auth_role = "student"
                 st.rerun()
     with teacher_col:
         with st.container(border=True):
-            st.markdown('<div class="role-heading"><span class="role-icon">A</span><span>Admin Login</span></div>', unsafe_allow_html=True)
+            st.markdown('<div class="role-heading"><span>Admin Login</span></div>', unsafe_allow_html=True)
             st.caption("Create quizzes, publish them, and review class results.")
             if st.button("Admin Login", key="select_teacher", type="primary" if role == "admin" else "secondary", use_container_width=True):
                 st.session_state.auth_role = "admin"
@@ -635,6 +635,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
