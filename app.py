@@ -51,6 +51,25 @@ div.stButton > button[kind="primary"] { background:linear-gradient(100deg,#7762e
 [data-testid="stProgressBar"] > div > div { background:linear-gradient(90deg,#8e7af0,#54cda7); }
 [data-testid="stTextInput"] input,[data-testid="stTextArea"] textarea { border-radius:11px; }
 hr { border-color:var(--line); }.small-muted { color:var(--muted); font-size:.9rem; }
+html,body,.stApp,[data-testid="stAppViewContainer"],[data-testid="stMain"] { color:#20223a !important; }
+.block-container { box-sizing:border-box; width:100%; max-width:1440px !important; margin:0 auto !important; padding:2.5rem clamp(1.25rem,4vw,4rem) 4rem !important; }
+.stApp { overflow-x:hidden; }
+p,label,legend,[data-testid="stWidgetLabel"] p,[data-testid="stMarkdownContainer"] { color:#20223a; }
+[data-testid="stWidgetLabel"] p { font-weight:600; }
+[data-baseweb="tab"] { color:#686b82 !important; }
+button[data-baseweb="tab"][aria-selected="true"] { color:#6753d8 !important; }
+.stTabs [data-baseweb="tab-highlight"] { background-color:#6753d8 !important; }
+[data-baseweb="input"] > div,[data-baseweb="textarea"] { background:#fff !important; border-color:#dedee9 !important; }
+[data-baseweb="input"] input,[data-baseweb="textarea"] textarea { color:#20223a !important; caret-color:#6753d8; }
+[data-testid="stTextInput"] input::placeholder,[data-testid="stTextArea"] textarea::placeholder { color:#9294a5 !important; }
+div.stButton > button[kind="primary"],div[data-testid="stFormSubmitButton"] button,button[kind="primaryFormSubmit"] { background:linear-gradient(100deg,#7762e4,#5c49c8) !important; color:#fff !important; border:0 !important; }
+[data-testid="stForm"] { border:0; }
+@media (max-width:700px) { .block-container { padding:1.25rem 1rem 3rem !important; } h1 { font-size:2rem !important; } }
+[data-testid="stWidgetLabel"],[data-testid="stWidgetLabel"] p,label,legend { color:#20223a !important; }
+.stTabs button[data-baseweb="tab"] { color:#686b82 !important; }
+.stTabs button[data-baseweb="tab"][aria-selected="true"] { color:#6753d8 !important; }
+.stTabs [data-baseweb="tab-highlight"],[data-baseweb="tab-border"] { background:#6753d8 !important; }
+button[kind*="primary"],div[data-testid="stFormSubmitButton"] button { background:linear-gradient(100deg,#7762e4,#5c49c8) !important; color:#fff !important; border:0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -541,3 +560,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
