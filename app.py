@@ -268,7 +268,16 @@ def render_auth():
                 st.session_state.auth_role = "admin"
                 st.rerun()
     if role == "student":
-        mode = st.radio("Student access", ["Sign in", "Create student account"], horizontal=True, label_visibility="collapsed", key="student_auth_mode")
+        mode = st.session_state.get("student_auth_mode", "Sign in")
+        sign_in_col, create_col = st.columns(2, gap="small")
+        with sign_in_col:
+            if st.button("Sign in", key="student_mode_signin", type="primary" if mode == "Sign in" else "secondary", use_container_width=True):
+                st.session_state.student_auth_mode = "Sign in"
+                st.rerun()
+        with create_col:
+            if st.button("Create student account", key="student_mode_create", type="primary" if mode == "Create student account" else "secondary", use_container_width=True):
+                st.session_state.student_auth_mode = "Create student account"
+                st.rerun()
         if mode == "Sign in":
             with st.form("student_login"):
                 username = st.text_input("Username", key="s_login_user")
@@ -626,6 +635,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
