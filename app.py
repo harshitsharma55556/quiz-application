@@ -26,10 +26,10 @@ DEFAULT_QUESTIONS = [
     {"q": "What does 'VLOOKUP' stand for in Excel?", "options": ["Vertical Lookup", "Value Lookup", "Variable Lookup", "View Lookup"], "ans": "Vertical Lookup", "category": "Excel", "difficulty": "Easy", "explanation": "VLOOKUP searches vertically in the first column of a range."},
 ]
 
-st.set_page_config(page_title="Quizly | Classroom", page_icon="✦", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Quizly | Classroom", page_icon="✦", layout="wide", initial_sidebar_state="collapsed")
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Montserrat:wght@500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap');
 :root { --ink:#20223a; --muted:#70738a; --line:#e9e9f1; --violet:#6753d8; --paper:#f6f6fb; }
 .stApp { background:radial-gradient(ellipse at 78% -8%,rgba(133,112,236,.15),transparent 34%),var(--paper); color:var(--ink); font-family:'DM Sans',sans-serif; }
 [data-testid="stHeader"] { background:transparent; }
@@ -84,6 +84,34 @@ div.stButton > button,div.stDownloadButton > button { font-size:1.02rem !importa
 .login-stat { margin-top:2rem; padding:1rem 1.2rem; display:inline-block; border-radius:16px; background:#fff; border:1px solid #e8e4f5; color:#666a82; }
 .login-stat strong { color:#6753d8; font-size:1.5rem; font-family:'Manrope',sans-serif; }
 @media (max-width:700px) { .login-title { font-size:2.35rem !important; } h1 { font-size:2.2rem !important; } body,p,label { font-size:1rem; } }
+/* Quizly visual system inspired by editorial tech landing pages */
+:root { --ink:#07113f; --muted:#566284; --line:#dfe7f3; --violet:#05b8dc; --paper:#f3f7fc; --navy:#050638; --blue:#063e91; --cyan:#18c6e5; }
+.stApp { background:#f4f7fc !important; color:#07113f !important; font-family:'Source Sans 3','Segoe UI',sans-serif !important; }
+.block-container { max-width:1600px !important; padding:0 clamp(1rem,4vw,4rem) 4rem !important; }
+h1,h2,h3,h4 { color:#07113f !important; font-family:'Montserrat','Segoe UI',sans-serif !important; letter-spacing:-.025em !important; }
+h1 { font-size:2.8rem !important; } h2 { font-size:2rem !important; } h3 { font-size:1.42rem !important; }
+p,label,[data-testid="stWidgetLabel"] p { font-family:'Source Sans 3','Segoe UI',sans-serif !important; font-size:1.08rem !important; }
+.brandbar { height:82px; margin:0 calc(-1 * clamp(1rem,4vw,4rem)); padding:0 clamp(1.4rem,9vw,9rem); background:#050638; color:#fff; display:flex; align-items:center; justify-content:space-between; gap:2rem; }
+.brand-lockup { display:flex; align-items:center; gap:1rem; color:#fff; }.brand-logo { width:46px; height:46px; border:2px solid #13c6e1; border-radius:4px 15px 4px 15px; display:grid; place-items:center; font:800 1.35rem 'Montserrat',sans-serif; color:#fff; box-shadow:inset 0 0 0 4px #ffffff10; }
+.brand-name { color:#fff; font:800 1.45rem 'Montserrat',sans-serif; letter-spacing:.02em; }.brand-tag { border-left:1px solid #64709c; padding-left:1rem; color:#b8c4e7; font:700 .78rem 'Montserrat',sans-serif; letter-spacing:.1em; line-height:1.5; text-transform:uppercase; }
+.brand-actions { color:#fff; display:flex; align-items:center; gap:2rem; font:700 .9rem 'Montserrat',sans-serif; letter-spacing:.1em; text-transform:uppercase; }.brand-actions .accent { color:#25c8e3; }
+.public-nav { height:58px; margin:0 calc(-1 * clamp(1rem,4vw,4rem)); padding:0 clamp(1.4rem,9vw,9rem); background:#fff; border-bottom:1px solid #e0e7f2; display:flex; align-items:center; gap:clamp(1rem,4vw,4rem); color:#091143; font:700 .84rem 'Montserrat',sans-serif; letter-spacing:.1em; text-transform:uppercase; }
+.landing-hero { position:relative; overflow:hidden; min-height:390px; margin:0 calc(-1 * clamp(1rem,4vw,4rem)); padding:3.3rem clamp(1.4rem,9vw,9rem); color:#fff; background:radial-gradient(ellipse at 80% 18%,#05abd0 0,transparent 32%),linear-gradient(112deg,#071145 0%,#064a9f 57%,#078fc5 100%); }
+.landing-hero:before { content:''; position:absolute; inset:0; opacity:.25; background-image:radial-gradient(#5ce4f6 1.7px,transparent 1.7px); background-size:19px 19px; mask-image:linear-gradient(90deg,#000,transparent 34%); }
+.landing-inner { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:2rem; max-width:1450px; margin:auto; }.landing-copy { max-width:780px; }
+.landing-kicker { color:#70e3e7; font:800 .86rem 'Montserrat',sans-serif; letter-spacing:.15em; text-transform:uppercase; }
+.landing-title { margin:1.1rem 0 1rem; color:#fff !important; font:4.5rem/1.02 'DM Serif Display',Georgia,serif !important; letter-spacing:-.02em !important; }.landing-title em { color:#53dfd1; font-style:normal; }
+.landing-subtitle { color:#e2edff !important; max-width:660px; font:500 1.25rem/1.55 'Source Sans 3',sans-serif !important; }.landing-stats { margin-top:1.4rem; color:#fff; font:700 .9rem 'Montserrat',sans-serif; letter-spacing:.09em; text-transform:uppercase; }.landing-stats strong { color:#65e2d3; }
+.landing-art { width:340px; height:240px; position:relative; flex:0 0 340px; display:grid; place-items:center; }.art-glow { position:absolute; width:220px; height:220px; border-radius:50%; background:linear-gradient(140deg,#2bd2e1aa,#4d63ff44); filter:blur(4px); }
+.art-card { position:relative; width:260px; padding:1.3rem; border:1px solid #9ae8f877; border-radius:19px; background:linear-gradient(145deg,#0a1b62ef,#082c78df); box-shadow:0 22px 50px #0005; transform:rotate(-5deg); color:#fff; }.art-card small { color:#70e3e7; font:700 .72rem 'Montserrat',sans-serif; letter-spacing:.12em; }.art-score { margin:.45rem 0; font:3.2rem 'DM Serif Display',Georgia,serif; }.art-progress { height:8px; background:#ffffff33; border-radius:9px; overflow:hidden; }.art-progress span { display:block; width:78%; height:100%; background:linear-gradient(90deg,#25cce0,#70e3d2); }.art-chip { position:absolute; right:0; bottom:12px; padding:.75rem 1rem; background:#fff; border-radius:12px; color:#07113f; font:700 .85rem 'Montserrat',sans-serif; box-shadow:0 9px 22px #0003; }
+[data-testid="stVerticalBlockBorderWrapper"] { border-radius:18px !important; border-color:#dfe7f3 !important; background:#fff; box-shadow:0 9px 25px #06184a0e; }
+.quiz-card { border-color:#dfe7f3; box-shadow:0 12px 30px #07113f0c; }.question-card { background:linear-gradient(145deg,#fff,#f1f8ff); border-color:#cceaf3; }
+.hero { color:#fff !important; padding:2.6rem 3rem; border:0; border-radius:4px 24px 4px 24px; background:radial-gradient(ellipse at 85% 20%,#09acd0,transparent 36%),linear-gradient(110deg,#071145,#075aa8); box-shadow:0 17px 35px #06184a22; }
+.hero h1,.hero h2,.hero p { color:#fff !important; }.hero h1 { font:3.4rem/1.08 'DM Serif Display',Georgia,serif !important; letter-spacing:0 !important; }.hero-kicker,.eyebrow { color:#4edbd9 !important; font-size:.8rem; }.pill { background:#e8fbfd; color:#075682; border-color:#c7f0f5; }
+[data-testid="stMetric"] { border-color:#dce9f5; }.stProgress > div > div { background:linear-gradient(90deg,#03b7de,#48dfc9) !important; }
+@media(max-width:850px) { .brand-tag,.brand-actions span:first-child { display:none; }.public-nav { overflow-x:auto; white-space:nowrap; }.landing-inner { align-items:flex-start; }.landing-title { font-size:3.5rem !important; }.landing-art { width:230px; flex-basis:230px; transform:scale(.85); transform-origin:center right; } }
+@media(max-width:620px) { .brandbar { height:68px; }.brand-actions { gap:.7rem; font-size:.72rem; }.public-nav { height:48px; font-size:.68rem; }.landing-hero { padding:2.5rem 1.3rem; }.landing-inner { display:block; }.landing-title { font-size:3rem !important; }.landing-art { display:none; }.hero { padding:2rem 1.3rem; }.hero h1 { font-size:2.5rem !important; } }
+[data-testid="stSidebar"],[data-testid="stSidebarCollapsedControl"] { display:none !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -201,92 +229,90 @@ def hero(kicker, title, subtitle):
 
 
 def render_auth():
-    left, right = st.columns([0.9, 1.1], gap="large")
-    with left:
-        st.markdown('<div class="brand-mark">✦</div><div class="hero-kicker" style="margin-top:1.3rem">YOUR CLASSROOM, IN FOCUS</div><h1 class="login-title">A brighter way<br>to learn together.</h1><p class="login-copy">Practice with quizzes from your teacher, track your progress, and keep learning one question at a time.</p>', unsafe_allow_html=True)
-        published = sum(bool(q.get("published")) for q in st.session_state.quizzes)
-        st.markdown(f"<div class='login-stat'><strong>{published}</strong><span> quizzes ready for students</span></div>", unsafe_allow_html=True)
-    with right:
-        st.markdown("### Choose your space")
-        role = st.session_state.get("auth_role", "student")
-        student_col, teacher_col = st.columns(2, gap="medium")
-        with student_col:
-            with st.container(border=True):
-                st.markdown("### 🎓 Student")
-                st.caption("Find published quizzes and check your scores.")
-                if st.button("Student sign in", key="select_student", type="primary" if role == "student" else "secondary", use_container_width=True):
-                    st.session_state.auth_role = "student"
+    published = sum(bool(q.get("published")) for q in st.session_state.quizzes)
+    st.markdown('''<header class="brandbar"><div class="brand-lockup"><div class="brand-logo">Q</div><div class="brand-name">QUIZLY</div><div class="brand-tag">LEARN +<br>GROW</div></div><div class="brand-actions"><span>CLASSROOM QUIZZES</span><span>JOIN <b class="accent">|</b> LOG IN</span></div></header>''', unsafe_allow_html=True)
+    st.markdown('''<nav class="public-nav"><span>STUDENT QUIZZES</span><span>LEARNING PROGRESS</span><span>TEACHER STUDIO</span><span>BUILD · PRACTICE · GROW</span></nav>''', unsafe_allow_html=True)
+    st.markdown(f'''<section class="landing-hero"><div class="landing-inner"><div class="landing-copy"><div class="landing-kicker">A CLASSROOM FOR CURIOSITY</div><h1 class="landing-title">Learn. <em>Grow.</em><br>Show what you know.</h1><p class="landing-subtitle">Take thoughtful quizzes from your teacher, build confidence with every answer, and keep your progress in view.</p><div class="landing-stats"><strong>{published}</strong> PUBLISHED QUIZZES &nbsp;·&nbsp; <strong>2</strong> SPACES TO LEARN</div></div><div class="landing-art"><div class="art-glow"></div><div class="art-card"><small>YOUR NEXT CHALLENGE</small><div class="art-score">Ready?</div><div class="art-progress"><span></span></div><small>ONE QUESTION AT A TIME</small></div><div class="art-chip">✦ &nbsp; Keep growing</div></div></div></section>''', unsafe_allow_html=True)
+    st.markdown("### Start here")
+    st.caption("Choose your space to sign in or create an account.")
+    role = st.session_state.get("auth_role", "student")
+    student_col, teacher_col = st.columns(2, gap="medium")
+    with student_col:
+        with st.container(border=True):
+            st.markdown("### 🎓  Student space")
+            st.caption("Take published quizzes and follow your scores.")
+            if st.button("Continue as student", key="select_student", type="primary" if role == "student" else "secondary", use_container_width=True):
+                st.session_state.auth_role = "student"
+                st.rerun()
+    with teacher_col:
+        with st.container(border=True):
+            st.markdown("### 🧑‍🏫  Teacher studio")
+            st.caption("Create quizzes, publish them, and review class results.")
+            if st.button("Continue as teacher", key="select_teacher", type="primary" if role == "admin" else "secondary", use_container_width=True):
+                st.session_state.auth_role = "admin"
+                st.rerun()
+    if role == "student":
+        mode = st.radio("Student access", ["Sign in", "Create student account"], horizontal=True, label_visibility="collapsed", key="student_auth_mode")
+        if mode == "Sign in":
+            with st.form("student_login"):
+                username = st.text_input("Username", key="s_login_user")
+                password = st.text_input("Password", type="password", key="s_login_pass")
+                submit = st.form_submit_button("Sign in as student", type="primary", use_container_width=True)
+            if submit:
+                account = verify_account(username, password)
+                if account and account["role"] == "student":
+                    st.session_state.user = account
+                    st.session_state.page = "Available quizzes"
                     st.rerun()
-        with teacher_col:
-            with st.container(border=True):
-                st.markdown("### 🧑‍🏫 Teacher")
-                st.caption("Create quizzes, manage questions, and view results.")
-                if st.button("Teacher sign in", key="select_teacher", type="primary" if role == "admin" else "secondary", use_container_width=True):
-                    st.session_state.auth_role = "admin"
-                    st.rerun()
-        st.divider()
-        if role == "student":
-            mode = st.radio("Student access", ["Sign in", "Create student account"], horizontal=True, label_visibility="collapsed", key="student_auth_mode")
-            if mode == "Sign in":
-                with st.form("student_login"):
-                    username = st.text_input("Username", key="s_login_user")
-                    password = st.text_input("Password", type="password", key="s_login_pass")
-                    submit = st.form_submit_button("Sign in as student", type="primary", use_container_width=True)
-                if submit:
-                    account = verify_account(username, password)
-                    if account and account["role"] == "student":
-                        st.session_state.user = account
-                        st.session_state.page = "Available quizzes"
-                        st.rerun()
-                    st.error("We couldn’t sign you in as a student. Check your details or create an account.")
-            else:
-                with st.form("student_signup"):
-                    username = st.text_input("Choose a username", key="s_signup_user", help="3–24 letters, numbers, dots, dashes, or underscores")
-                    password = st.text_input("Create a password", type="password", key="s_signup_pass", help="At least 8 characters")
-                    confirm = st.text_input("Confirm password", type="password", key="s_signup_confirm")
-                    submit = st.form_submit_button("Create student account", type="primary", use_container_width=True)
-                if submit:
-                    error = validate_account(username, password, confirm)
-                    if error:
-                        st.error(error)
-                    elif any(a.get("username_key") == username.strip().casefold() for a in st.session_state.accounts):
-                        st.error("That username is already taken.")
-                    else:
-                        st.session_state.accounts.append(create_account(username.strip(), password, "student"))
-                        save_accounts()
-                        st.success("Account created. Choose Sign in to continue.")
+                st.error("We couldn’t sign you in as a student. Check your details or create an account.")
         else:
-            first_admin = not any(a.get("role") == "admin" for a in st.session_state.accounts)
-            if first_admin:
-                st.info("First-time setup: create the teacher account for this app. This setup closes after the first admin is created.")
-                with st.form("admin_setup"):
-                    username = st.text_input("Teacher username", key="a_setup_user")
-                    password = st.text_input("Create teacher password", type="password", key="a_setup_pass")
-                    confirm = st.text_input("Confirm password", type="password", key="a_setup_confirm")
-                    submit = st.form_submit_button("Create teacher account", type="primary", use_container_width=True)
-                if submit:
-                    error = validate_account(username, password, confirm)
-                    if error:
-                        st.error(error)
-                    elif any(a.get("username_key") == username.strip().casefold() for a in st.session_state.accounts):
-                        st.error("That username is already taken.")
-                    else:
-                        st.session_state.accounts.append(create_account(username.strip(), password, "admin"))
-                        save_accounts()
-                        st.success("Teacher account created. Sign in below.")
-                        st.rerun()
-            else:
-                with st.form("admin_login"):
-                    username = st.text_input("Teacher username", key="a_login_user")
-                    password = st.text_input("Password", type="password", key="a_login_pass")
-                    submit = st.form_submit_button("Sign in to teacher studio", type="primary", use_container_width=True)
-                if submit:
-                    account = verify_account(username, password)
-                    if account and account["role"] == "admin":
-                        st.session_state.user = account
-                        st.session_state.page = "Quiz studio"
-                        st.rerun()
-                    st.error("We couldn’t sign you in as an admin. Check your teacher account details.")
+            with st.form("student_signup"):
+                username = st.text_input("Choose a username", key="s_signup_user", help="3–24 letters, numbers, dots, dashes, or underscores")
+                password = st.text_input("Create a password", type="password", key="s_signup_pass", help="At least 8 characters")
+                confirm = st.text_input("Confirm password", type="password", key="s_signup_confirm")
+                submit = st.form_submit_button("Create student account", type="primary", use_container_width=True)
+            if submit:
+                error = validate_account(username, password, confirm)
+                if error:
+                    st.error(error)
+                elif any(a.get("username_key") == username.strip().casefold() for a in st.session_state.accounts):
+                    st.error("That username is already taken.")
+                else:
+                    st.session_state.accounts.append(create_account(username.strip(), password, "student"))
+                    save_accounts()
+                    st.success("Account created. Choose Sign in to continue.")
+    else:
+        first_admin = not any(a.get("role") == "admin" for a in st.session_state.accounts)
+        if first_admin:
+            st.info("First-time setup: create the teacher account for this app. This option closes after the first admin is created.")
+            with st.form("admin_setup"):
+                username = st.text_input("Teacher username", key="a_setup_user")
+                password = st.text_input("Create teacher password", type="password", key="a_setup_pass")
+                confirm = st.text_input("Confirm password", type="password", key="a_setup_confirm")
+                submit = st.form_submit_button("Create teacher account", type="primary", use_container_width=True)
+            if submit:
+                error = validate_account(username, password, confirm)
+                if error:
+                    st.error(error)
+                elif any(a.get("username_key") == username.strip().casefold() for a in st.session_state.accounts):
+                    st.error("That username is already taken.")
+                else:
+                    st.session_state.accounts.append(create_account(username.strip(), password, "admin"))
+                    save_accounts()
+                    st.success("Teacher account created. Sign in below.")
+                    st.rerun()
+        else:
+            with st.form("admin_login"):
+                username = st.text_input("Teacher username", key="a_login_user")
+                password = st.text_input("Password", type="password", key="a_login_pass")
+                submit = st.form_submit_button("Sign in to teacher studio", type="primary", use_container_width=True)
+            if submit:
+                account = verify_account(username, password)
+                if account and account["role"] == "admin":
+                    st.session_state.user = account
+                    st.session_state.page = "Quiz studio"
+                    st.rerun()
+                st.error("We couldn’t sign you in as an admin. Check your teacher account details.")
 
 def logout():
     reset_attempt()
@@ -567,19 +593,14 @@ def main():
     if not user:
         render_auth()
         return
-    with st.sidebar:
-        st.markdown('<div class="brand-mark">✦</div>', unsafe_allow_html=True)
-        st.markdown("# Quizly")
-        st.caption("Classroom quiz studio")
-        st.divider()
-        if user["role"] == "admin":
-            page = st.radio("TEACHER MENU", ["Quiz studio", "Class results"], key="admin_page")
-            st.divider()
-            st.caption(f"Signed in as teacher · {user['username']}")
-        else:
-            page = st.radio("STUDENT MENU", ["Available quizzes", "My results"], key="student_page")
-            st.divider()
-            st.caption(f"Signed in as student · {user['username']}")
+    username = html.escape(user["username"])
+    role_label = "TEACHER STUDIO" if user["role"] == "admin" else "STUDENT SPACE"
+    st.markdown(f'''<header class="brandbar"><div class="brand-lockup"><div class="brand-logo">Q</div><div class="brand-name">QUIZLY</div><div class="brand-tag">LEARN +<br>GROW</div></div><div class="brand-actions"><span>{role_label}</span><span>{username}</span></div></header>''', unsafe_allow_html=True)
+    options = ["Quiz studio", "Class results"] if user["role"] == "admin" else ["Available quizzes", "My results"]
+    nav_col, out_col = st.columns([5, 1])
+    with nav_col:
+        page = st.radio("Navigation", options, horizontal=True, label_visibility="collapsed", key="admin_page" if user["role"] == "admin" else "student_page")
+    with out_col:
         if st.button("Sign out", use_container_width=True):
             logout()
     if user["role"] == "admin":
@@ -587,9 +608,11 @@ def main():
     else:
         render_student()
 
-
 if __name__ == "__main__":
     main()
+
+
+
 
 
 
